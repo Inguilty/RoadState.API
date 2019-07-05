@@ -32,6 +32,6 @@ steps:
     zipAfterPublish: true
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: 'RoadState'
     ArtifactName: 'drop'
     publishLocation: 'Container'
