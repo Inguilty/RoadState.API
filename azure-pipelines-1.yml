@@ -24,12 +24,12 @@ steps:
     command: test
     projects: 'RoadState/RoadState.Test/RoadState.Test.csproj'
     arguments: '--configuration $(buildConfiguration)'
-#- task: DotNetCoreCLI@2
-#  inputs:
-#    command: 'publish'
-#    publishWebProjects: false
-#    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-#    zipAfterPublish: true
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
+    zipAfterPublish: true
 #- task: PublishBuildArtifacts@1
 #  inputs:
 #    PathtoPublish: 'RoadState'
