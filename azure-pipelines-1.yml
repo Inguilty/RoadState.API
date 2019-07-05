@@ -30,8 +30,8 @@ steps:
     publishWebProjects: false
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
     zipAfterPublish: true
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: 'RoadState'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+#- task: PublishBuildArtifacts@1
+#  inputs:
+#    PathtoPublish: 'RoadState'
+#    ArtifactName: 'drop'
+#    publishLocation: 'Container'
