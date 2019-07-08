@@ -35,7 +35,7 @@ steps:
     rootFolderOrFile: '$(Build.BinariesDirectory)'
     includeRootFolder: true
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    archiveFile: 'publish.zip'
     replaceExistingArchive: true
 - task: PublishBuildArtifacts@1
   inputs:
