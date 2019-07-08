@@ -29,7 +29,14 @@ steps:
     command: 'publish'
     publishWebProjects: false
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-    zipAfterPublish: true
+    zipAfterPublish: false
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: 'RoadState'
