@@ -28,7 +28,7 @@ steps:
   displayName: ".NET publish package"
   inputs:
     command: publish
-    projects: 'RoadState/RoadState.sln'
+    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
     publishWebProjects: false
     arguments: '--configuration $(BuildConfiguration) --no-restore --output RoadState'
 - task: PublishBuildArtifacts@1
@@ -37,16 +37,3 @@ steps:
     PathtoPublish: 'RoadState'
     ArtifactName: app
     publishLocation: Container
-
-#- task: DotNetCoreCLI@2
-#  inputs:
-#    command: 'publish'
-#    publishWebProjects: false
-#    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-#    zipAfterPublish: true
-#- task: PublishBuildArtifacts@1
-#  inputs:
-#    PathtoPublish: 'RoadState'
-#    ArtifactName: 'drop'
-#    publishLocation: 'Container'
-#    targetPath: 'drop'
