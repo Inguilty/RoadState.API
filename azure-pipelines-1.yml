@@ -29,11 +29,11 @@ steps:
   inputs:
     command: publish
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-    arguments: '--configuration $(BuildConfiguration) --no-restore --output RoadState/app/pkg'
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output '
 - task: PublishBuildArtifacts@1
   displayName: "Publish artifacts"
   inputs:
-    PathtoPublish: 'RoadState/app'
+    PathtoPublish: ''
     ArtifactName: app
     publishLocation: Container
 
