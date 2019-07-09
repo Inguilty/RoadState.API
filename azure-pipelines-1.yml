@@ -17,7 +17,7 @@ steps:
   displayName: Build
   inputs:
     command: build
-    projects: 'RoadState.Backend.csproj'
+    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
     arguments: '--configuration $(buildConfiguration)'
 - task: DotNetCoreCLI@2
   inputs:
@@ -29,11 +29,11 @@ steps:
   inputs:
     command: publish
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-    arguments: '--configuration $(BuildConfiguration) --no-restore --output '
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/app/pkg'
 - task: PublishBuildArtifacts@1
   displayName: "Publish artifacts"
   inputs:
-    PathtoPublish: ''
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/app'
     ArtifactName: app
     publishLocation: Container
 
