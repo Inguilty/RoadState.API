@@ -29,16 +29,17 @@ steps:
     command: 'publish'
     publishWebProjects: false
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-    zipAfterPublish: true
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: 'publish.zip'
-    replaceExistingArchive: true
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: 'RoadState'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    zipAfterPublish: false
+    workingDirectory: 'RoadState'
+#- task: ArchiveFiles@2
+#  inputs:
+#    rootFolderOrFile: 'RoadState/RoadState.Backend/bin/Debug/netcoreapp2.2/publish'
+#    includeRootFolder: true
+#    archiveType: 'zip'
+#    archiveFile: 'publish.zip'
+#    replaceExistingArchive: true
+#- task: PublishBuildArtifacts@1
+#  inputs:
+#    PathtoPublish: 'RoadState'
+#    ArtifactName: 'drop'
+#    publishLocation: 'Container'
