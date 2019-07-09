@@ -28,7 +28,7 @@ steps:
   displayName: ".NET publish package"
   inputs:
     command: publish
-    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
+    projects: 'RoadState/RoadState.sln'
     publishWebProjects: false
     arguments: '--configuration $(BuildConfiguration) --no-restore --output RoadState'
 - task: PublishBuildArtifacts@1
