@@ -17,7 +17,7 @@ steps:
   displayName: Build
   inputs:
     command: build
-    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
+    projects: 'RoadState.Backend.csproj'
     arguments: '--configuration $(buildConfiguration)'
 - task: DotNetCoreCLI@2
   inputs:
@@ -30,6 +30,11 @@ steps:
     publishWebProjects: false
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
     zipAfterPublish: true
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'RoadState/RoadState.Backend/bin/Debug/netcoreapp2.2'
+    Contents: '*.zip'
+    TargetFolder: 'RoadState'
 #- task: PublishBuildArtifacts@1
 #  inputs:
 #    PathtoPublish: 'RoadState'
