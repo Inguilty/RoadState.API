@@ -37,3 +37,4 @@ steps:
     PathtoPublish: 'RoadState'
     ArtifactName: app
     publishLocation: Container
+    TargetPath: RoadState/*.zip
