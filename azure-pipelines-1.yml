@@ -25,16 +25,23 @@ steps:
     projects: 'RoadState/RoadState.Test/RoadState.Test.csproj'
     arguments: '--configuration $(buildConfiguration)'
 - task: DotNetCoreCLI@2
+  displayName: ".NET publish package"
   inputs:
-    command: 'publish'
-    publishWebProjects: false
-    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
-    zipAfterPublish: true
-- task: CopyFiles@2
+    command: publish
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/app/pkg'
+- task: PublishBuildArtifacts@1
+  displayName: "Publish artifacts"
   inputs:
-    SourceFolder: 'RoadState/RoadState.Backend/bin/Debug/netcoreapp2.2'
-    Contents: '*.zip'
-    TargetFolder: 'RoadState'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/app'
+    ArtifactName: app
+    publishLocation: Container
+
+#- task: DotNetCoreCLI@2
+#  inputs:
+#    command: 'publish'
+#    publishWebProjects: false
+#    projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
+#    zipAfterPublish: true
 #- task: PublishBuildArtifacts@1
 #  inputs:
 #    PathtoPublish: 'RoadState'
