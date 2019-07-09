@@ -38,8 +38,9 @@ steps:
 #    archiveType: 'zip'
 #    archiveFile: 'publish.zip'
 #    replaceExistingArchive: true
-#- task: PublishBuildArtifacts@1
-#  inputs:
-#    PathtoPublish: 'RoadState'
-#    ArtifactName: 'drop'
-#    publishLocation: 'Container'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'RoadState'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+    targetPath: 'RoadState'
