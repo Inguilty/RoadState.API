@@ -30,11 +30,10 @@ steps:
     command: publish
     projects: 'RoadState/RoadState.Backend/RoadState.Backend.csproj'
     publishWebProjects: false
-    arguments: '--configuration $(BuildConfiguration) --no-restore --output RoadState'
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output RoadState/app/pkg'
 - task: PublishBuildArtifacts@1
   displayName: "Publish artifacts"
   inputs:
-    PathtoPublish: 'RoadState'
+    PathtoPublish: 'RoadState/app'
     ArtifactName: app
     publishLocation: Container
-    TargetPath: RoadState/*.zip
