@@ -21,10 +21,11 @@ namespace RoadState.Backend.Data
                     UserName = "admin"
                 },
                 Location = null,
-                ReliabilityLevel = 1,
-                ProblemLevel = 1,
-                Description = "Test",
-                PublishDate = DateTime.Now
+                Rating = 1,
+                State = "Very low",
+                Description = "Road has not been repaired for 20 years",
+                PublishDate = DateTime.Now,
+                UserRate = null
             }
         };
     }
