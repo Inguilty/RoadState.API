@@ -29,10 +29,11 @@ namespace RoadState.Backend.Controllers
             return Ok(bugReport);
         }
 
-        [HttpPut("rate/{id}")]
+        [HttpPost("{id}/rate")]
         public async Task<IActionResult> RateBugReport(int id, string rate)
         {
             var bugReport = _context.BugReports.Find(x => x.Id == id);
+            if (bugReport == null) return NotFound();
             bugReport.UserRate = rate;
             return Ok();
         }

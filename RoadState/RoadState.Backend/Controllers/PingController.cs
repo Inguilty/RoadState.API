@@ -16,7 +16,7 @@ namespace RoadState.Backend.Controllers
         [Route("ping")]
         public IActionResult Get()
         {
-            return Ok();
+            return Ok(new { status = "OK" });
         }
     }
 }
