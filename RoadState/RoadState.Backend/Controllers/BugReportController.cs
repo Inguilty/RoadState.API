@@ -28,5 +28,14 @@ namespace RoadState.Backend.Controllers
             if (bugReport is null) return NotFound();
             return Ok(bugReport);
         }
+
+        [HttpPost("{id}/rate")]
+        public async Task<IActionResult> RateBugReport(int id, string rate)
+        {
+            var bugReport = _context.BugReports.Find(x => x.Id == id);
+            if (bugReport == null) return NotFound();
+            bugReport.UserRate = rate;
+            return Ok();
+        }
     }
 }
