@@ -1,8 +1,8 @@
-﻿using RoadState.Backend.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RoadState.Data;
 
 namespace RoadState.Backend.Data
 {
