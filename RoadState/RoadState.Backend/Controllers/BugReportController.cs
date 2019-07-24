@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RoadState.Backend.Data;
-using RoadState.Backend.Models;
 
 namespace RoadState.Backend.Controllers
 {

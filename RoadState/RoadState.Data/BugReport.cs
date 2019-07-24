@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace RoadState.Backend.Models
+namespace RoadState.Data
 {
-    public class BugReport
+    public class BugReport : BaseEntity
     {
-        public int Id { get; set; }
         public User Author { get; set; }
         public Location Location { get; set; }
         public int Rating { get; set; }
