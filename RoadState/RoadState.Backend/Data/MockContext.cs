@@ -20,7 +20,10 @@ namespace RoadState.Backend.Data
                     RegistrationDate = DateTime.Now,
                     UserName = "admin"
                 },
-                Location = null,
+                Location = new Location() {
+                    Longitude = 36.23167,
+                    Latitude= 49.98825
+                },
                 Rating = 1,
                 State = "Very low",
                 Description = "Road has not been repaired for 20 years",
