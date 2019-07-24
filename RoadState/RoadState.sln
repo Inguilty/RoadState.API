@@ -4,12 +4,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.Backend", "RoadState.Backend\RoadState.Backend.csproj", "{43D87F19-1CBA-4B67-9BC4-75D810ACAACB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{24828B3F-0068-4334-959F-02F2331B73CB} = {24828B3F-0068-4334-959F-02F2331B73CB}
+		{C55337B1-90B7-43FA-B991-7FC5500F8E1A} = {C55337B1-90B7-43FA-B991-7FC5500F8E1A}
+		{E451F3C9-CE7D-45CE-8BEC-2744A16AFD3A} = {E451F3C9-CE7D-45CE-8BEC-2744A16AFD3A}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.Test", "RoadState.Test\RoadState.Test.csproj", "{24828B3F-0068-4334-959F-02F2331B73CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoadState.DataAccessLayer", "RoadState.DataAccessLayer\RoadState.DataAccessLayer.csproj", "{E451F3C9-CE7D-45CE-8BEC-2744A16AFD3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.DataAccessLayer", "RoadState.DataAccessLayer\RoadState.DataAccessLayer.csproj", "{E451F3C9-CE7D-45CE-8BEC-2744A16AFD3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoadState.BusinessLayer", "RoadState.BusinessLayer\RoadState.BusinessLayer.csproj", "{C55337B1-90B7-43FA-B991-7FC5500F8E1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.BusinessLayer", "RoadState.BusinessLayer\RoadState.BusinessLayer.csproj", "{C55337B1-90B7-43FA-B991-7FC5500F8E1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
