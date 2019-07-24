@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RoadState.Backend.Controllers
 {
-    [Route("api")]
+    [Route("api/")]
     [ApiController]
     public class PingController : ControllerBase
     {
         // GET api/values
         [HttpGet]
-        [Route("/ping")]
+        [Route("ping")]
         public IActionResult Get()
         {
-            return Ok();
+            return Ok(new { status = "OK" });
         }
     }
 }
