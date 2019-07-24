@@ -7,7 +7,7 @@ using System.Text;
 namespace RoadState.DataAccessLayer
 {
     public class RoadStateContext : DbContext
-    {
+    { 
         public RoadStateContext(DbContextOptions<RoadStateContext> options) : base(options)
         {
 
