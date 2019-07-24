@@ -16,8 +16,6 @@ namespace RoadState.Backend.Data
                 Author = new User()
                 {
                     Email = "admin@gmail.com",
-                    HomeLocation = null,
-                    RegistrationDate = DateTime.Now,
                     UserName = "admin"
                 },
                 Location = null,
@@ -26,6 +24,24 @@ namespace RoadState.Backend.Data
                 Description = "Road has not been repaired for 20 years",
                 PublishDate = DateTime.Now,
                 UserRate = null
+            }
+        };
+
+        public List<User> Users { get; } = new List<User>()
+        {
+            new User()
+            {
+                Id="af6b0b609b7900b89ac395d7c5e4b1a513625bac",
+                Email="test@user.com",
+                UserName="testUser",
+                Password="qwerty123Q"
+            },
+            new User()
+            {
+                Id="gdf21b609as32f89ac395d7c5e4b1a513gfsd1",
+                Email="second@user.com",
+                UserName="secondUser",
+                Password="qwerty322Q"
             }
         };
     }

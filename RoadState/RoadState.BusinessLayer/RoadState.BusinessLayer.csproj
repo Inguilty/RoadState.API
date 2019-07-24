@@ -9,4 +9,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RoadState.BusinessLayer.Shared\RoadState.BusinessLayer.Shared\RoadState.BusinessLayer.Shared.csproj" />
+    <ProjectReference Include="..\RoadState.DataAccessLayer\RoadState.DataAccessLayer.csproj" />
+  </ItemGroup>
+
 </Project>
