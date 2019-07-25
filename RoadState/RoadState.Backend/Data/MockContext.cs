@@ -1,8 +1,8 @@
-﻿using RoadState.Backend.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RoadState.Data;
 
 namespace RoadState.Backend.Data
 {
@@ -18,7 +18,10 @@ namespace RoadState.Backend.Data
                     Email = "admin@gmail.com",
                     UserName = "admin"
                 },
-                Location = null,
+                Location = new Location() {
+                    Longitude = 36.23167,
+                    Latitude= 49.98825
+                },
                 Rating = 1,
                 State = "Very low",
                 Description = "Road has not been repaired for 20 years",
