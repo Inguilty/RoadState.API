@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RoadState.BusinessLayer.Shared\RoadState.BusinessLayer.Shared\RoadState.BusinessLayer.Shared.csproj" />
     <ProjectReference Include="..\RoadState.DataAccessLayer\RoadState.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\RoadState.Data\RoadState.Data.csproj" />
   </ItemGroup>
 
 </Project>
