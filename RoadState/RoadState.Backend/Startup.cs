@@ -28,7 +28,7 @@ namespace RoadState.Backend
             var currentDbContext = services.BuildServiceProvider().GetService<RoadStateContext>();
             var mapperConfig = new MapperConfiguration(mc =>
             {
-                mc.AddProfile(new MappingProfile(currentDbContext));
+                mc.AddProfile(new MappingProfile());
             });
             services.AddScoped<Repository, Repository>();
             IMapper mapper = mapperConfig.CreateMapper();
