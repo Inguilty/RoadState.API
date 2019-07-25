@@ -23,6 +23,8 @@ namespace RoadState.Backend.Automapper
                 .ForMember("AuthorName", opt => opt.MapFrom(c => c.Author.UserName))
                 .ForMember("Likes", opt => opt.MapFrom(c =>c.UserLikes.Where(x=>x.HasLiked).Count()))
                 .ForMember("Dislikes", opt => opt.MapFrom(c => c.UserLikes.Where(x=>!x.HasLiked).Count()));
+
+
         }
     }
 }

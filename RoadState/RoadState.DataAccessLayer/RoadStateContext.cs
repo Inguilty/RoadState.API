@@ -10,7 +10,7 @@ namespace RoadState.DataAccessLayer
     { 
         public RoadStateContext(DbContextOptions<RoadStateContext> options) : base(options)
         {
-
+            // Database.EnsureCreated();
         }
         public DbSet<BugReport> BugReports { get; set; }
         public DbSet<User> Users { get; set; }
