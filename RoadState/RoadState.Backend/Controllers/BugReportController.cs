@@ -8,6 +8,7 @@ using RoadState.Data;
 using RoadState.DataAccessLayer;
 using AutoMapper;
 using RoadState.BusinessLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace RoadState.Backend.Controllers
 {
@@ -38,7 +39,7 @@ namespace RoadState.Backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBugReport(int id)
         {
-            var bugReport = await _context.BugReports.FindAsync(id);
+            var bugReport = await _context.BugReports.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
             if (bugReport is null) return NotFound();
             return Ok(_mapper.Map<BugReportDTO>(bugReport));
         }
