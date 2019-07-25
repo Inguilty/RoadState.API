@@ -21,6 +21,30 @@ namespace RoadState.DataAccessLayer
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<BugReport>().HasData(
+            new BugReport
+            {
+                Id = 1,
+                Longitude = 36.31516,
+                Latitude = 50.0462,
+                Rating = 1,
+                State = "Low",
+                Description = "first bug report",
+                PublishDate = DateTime.Now,
+                AuthorId = "abcd",
+            });
+
+            modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = "abcd",
+                Email = "123@gmail.com",
+                UserName = "dimasik",
+                RegistrationDate = DateTime.Now,
+                Latitude = 34,
+                Longitude = 55,
+            });
+
             modelBuilder.Entity<BugReportRate>().HasOne(x => x.BugReport)
                 .WithMany(y => y.BugReportRates)
                 .HasForeignKey(x => x.BugReportId);

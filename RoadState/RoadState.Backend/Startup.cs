@@ -30,6 +30,7 @@ namespace RoadState.Backend
             {
                 mc.AddProfile(new MappingProfile(currentDbContext));
             });
+            services.AddScoped<Repository, Repository>();
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             services.AddCors();

@@ -16,17 +16,17 @@ namespace RoadState.Backend.Controllers
     [ApiController]
     public class BugReportController : ControllerBase
     {
-        private readonly RoadStateContext _context;
+        private readonly Repository _repository;
         private readonly IMapper _mapper;
-        public BugReportController(RoadStateContext context, IMapper mapper)
+        public BugReportController(Repository repository, IMapper mapper)
         {
-            _context = context;
+            _repository = repository;
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
+        public IActionResult GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
-            var bugReports = _context.BugReports.Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
+            var bugReports = _repository.GetBugReports().Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
             if (bugReports.Count == 0) return NotFound();
             return Ok(bugReports);
         }
@@ -37,17 +37,19 @@ namespace RoadState.Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBugReport(int id)
+        public IActionResult GetBugReport(int id)
         {
-            var bugReport = await _context.BugReports.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id);
+
+            var bugReport = _repository.GetBugReports().FirstOrDefault(x => x.Id == id);
+            var a = _repository.GetBugReports();
             if (bugReport is null) return NotFound();
             return Ok(_mapper.Map<BugReportDTO>(bugReport));
         }
 
         [HttpPost("{id}/rate")]
-        public async Task<IActionResult> RateBugReport(int id, string rate)
+        public IActionResult RateBugReport(int id, string rate)
         {
-            var bugReport = await _context.BugReports.FindAsync(id);
+            var bugReport = _repository.GetBugReport(id);
             if (bugReport == null) return NotFound();
             return Ok();
         }
