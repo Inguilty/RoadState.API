@@ -44,19 +44,6 @@ namespace RoadState.DataAccessLayer.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("BugReports");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AuthorId = "abcd",
-                            Description = "first bug report",
-                            Latitude = 50.046199999999999,
-                            Longitude = 36.315159999999999,
-                            PublishDate = new DateTime(2019, 7, 25, 17, 41, 44, 288, DateTimeKind.Local).AddTicks(134),
-                            Rating = 1,
-                            State = "Low"
-                        });
                 });
 
             modelBuilder.Entity("RoadState.Data.BugReportRate", b =>
@@ -138,17 +125,6 @@ namespace RoadState.DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "abcd",
-                            Email = "123@gmail.com",
-                            Latitude = 34.0,
-                            Longitude = 55.0,
-                            RegistrationDate = new DateTime(2019, 7, 25, 17, 41, 44, 292, DateTimeKind.Local).AddTicks(8054),
-                            UserName = "dimasik"
-                        });
                 });
 
             modelBuilder.Entity("RoadState.Data.UserLikes", b =>

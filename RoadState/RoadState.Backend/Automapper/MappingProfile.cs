@@ -11,20 +11,16 @@ namespace RoadState.Backend.Automapper
 {
     public class MappingProfile : Profile
     {
-        private readonly RoadStateContext _context;
-        public MappingProfile(RoadStateContext context)
+        public MappingProfile()
         {
-            _context = context;
-            CreateMap<BugReport, BugReportDTO>()
-                .ForMember("AuthorName", opt => opt.MapFrom(b => b.Author.UserName))
-                .ForMember("Location", opt => opt.MapFrom(b => new Location() { Longitude = b.Longitude, Latitude = b.Latitude }));
-
-            CreateMap<Comment, CommentDTO>()
-                .ForMember("AuthorName", opt => opt.MapFrom(c => c.Author.UserName))
-                .ForMember("Likes", opt => opt.MapFrom(c => c.UserLikes.Where(x => x.HasLiked).Count()))
-                .ForMember("Dislikes", opt => opt.MapFrom(c => c.UserLikes.Where(x => !x.HasLiked).Count()));
-
-
+            CreateMap<User, UserDto>();
+            CreateMap<BugReport, BugReportDto>()
+                .ForMember(b=>b.AuthorName, opt => opt.MapFrom(b => b.Author.UserName))
+                .ForMember(b=>b.Location, opt => opt.MapFrom(b => new Location() { Longitude = b.Longitude, Latitude = b.Latitude }));
+            CreateMap<Comment, CommentDto>()
+                .ForMember(c=>c.AuthorName, opt => opt.MapFrom(c => c.Author.UserName))
+                .ForMember(c=>c.Likes, opt => opt.MapFrom(c => c.UserLikes.FindAll(x=>x.HasLiked).Count))
+                .ForMember(c=>c.Dislikes, opt => opt.MapFrom(c => c.UserLikes.FindAll(x=>!x.HasLiked).Count));
         }
     }
 }
