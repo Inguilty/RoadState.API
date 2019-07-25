@@ -40,7 +40,7 @@ namespace RoadState.Backend.Controllers
         {
             var bugReport = await _context.BugReports.FindAsync(id);
             if (bugReport is null) return NotFound();
-            return Ok(_mapper.Map<BugReportDTO>(bugReport));
+            return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
         [HttpPost("{id}/rate")]

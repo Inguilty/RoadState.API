@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RoadState.BusinessLayer
 {
-    public class CommentDTO: BaseDTO
+    public class CommentDto: BaseDto
     {
         public string AuthorName { get; set; }
         public int Likes { get; set; }

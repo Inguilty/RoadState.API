@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RoadState.BusinessLayer
 {
-    public class BugReportDTO: BaseDTO
+    public class BugReportDto: BaseDto
     {
         public string AuthorName { get; set; }
         public int Rating { get; set; }
@@ -13,6 +13,6 @@ namespace RoadState.BusinessLayer
         public string UserRate { get; set; }
         public DateTime PublishDate { get; set; }
         public Location Location { get; set; }
-        public List<CommentDTO> Comments { get; set; }
+        public List<CommentDto> Comments { get; set; }
     }
 }

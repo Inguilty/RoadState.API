@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RoadState.BusinessLayer
 {
-    public class BaseDTO
+    public class BaseDto
     {
         public int Id { get; set; }
     }
