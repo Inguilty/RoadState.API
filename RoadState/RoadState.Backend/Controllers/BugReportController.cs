@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using RoadState.Data;
-using RoadState.DataAccessLayer;
-using AutoMapper;
 using RoadState.BusinessLayer;
-using Microsoft.EntityFrameworkCore;
+using RoadState.Data;
 using RoadState.DataAccessLayer.Interfaces;
+using System.Linq;
 
 namespace RoadState.Backend.Controllers
 {
