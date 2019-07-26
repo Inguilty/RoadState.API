@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RoadState.Backend.Automapper;
 using RoadState.DataAccessLayer;
-using System;
 
 namespace RoadState.Backend
 {
@@ -23,6 +23,7 @@ namespace RoadState.Backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<FormOptions>(x => x.MultipartBodyLengthLimit = 1_074_790_400); // Max file size
             services.AddDbContext<RoadStateContext>(options => options.UseSqlServer
             (Configuration.GetConnectionString("DefaultConnection")));
             var mapperConfig = new MapperConfiguration(mc =>
@@ -51,7 +52,7 @@ namespace RoadState.Backend
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
             app.UseStaticFiles();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

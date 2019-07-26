@@ -10,8 +10,7 @@ namespace RoadState.BusinessLayer
     {
         public int ProblemLevel { get; set; }
         public string Description { get; set; }
-        public Location Location { get; set; }
-        
-        
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
     }
 }
