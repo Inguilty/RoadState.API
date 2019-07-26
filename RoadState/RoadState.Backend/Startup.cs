@@ -30,6 +30,21 @@ namespace RoadState.Backend
             {
                 mc.AddProfile(new MappingProfile());
             });
+
+            services.AddScoped<IBugReportCreator, BugReportStorage>();
+            services.AddScoped<IBugReportFinder, BugReportStorage>();
+            services.AddScoped<IBugReportRater, BugReportStorage>();
+
+            services.AddScoped<ICommentCreator, CommentStorage>();
+            services.AddScoped<ICommentLiker, CommentStorage>();
+
+            services.AddScoped<IPhotoCreator, PhotoStorage>();
+            services.AddScoped<IPhotoFinder, PhotoStorage>();
+
+            services.AddScoped<IUserCreator, UserStorage>();
+            services.AddScoped<IUserFinder, UserStorage>();
+            services.AddScoped<IUserUpdator, UserStorage>();
+
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             services.AddCors();
