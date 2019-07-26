@@ -15,6 +15,6 @@ namespace RoadState.Data
 
         public List<BugReportRate> BugReportRates { get; set; } = new List<BugReportRate>();
         public List<Comment> Comments { get; set; } = new List<Comment>();
-        public List<UserLikes> UserLikes { get; set; } = new List<UserLikes>();
+        public List<UserMark> UserLikes { get; set; } = new List<UserMark>();
     }
 }
