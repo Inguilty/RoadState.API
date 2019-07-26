@@ -8,9 +8,9 @@ namespace RoadState.BusinessLayer.Shared.Interfaces
 {
     public interface IUserService
     {
-        Task<UserTransportModel> Authenticate(string username, string password);
+        Task<UserTransportModel> Authenticate(string username, string password, string appSettings);
         Task<UserTransportModel> GetById(string id);
         Task<UserTransportModel> Create(UserTransportModel user, string password);
-        void Update(UserTransportModel user, string password = null);
+        Task<bool> Update(UserTransportModel user, string newPassword);
     }
 }

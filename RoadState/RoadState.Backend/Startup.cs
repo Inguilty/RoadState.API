@@ -32,7 +32,8 @@ namespace RoadState.Backend
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<RoadStateContext>(options =>
             options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
-            //services.AddMvc();
+
+            //configuring auto mapper
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
@@ -45,7 +46,6 @@ namespace RoadState.Backend
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
-            // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
@@ -99,6 +99,7 @@ namespace RoadState.Backend
             }
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
+            app.UseAuthentication();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseMvc();

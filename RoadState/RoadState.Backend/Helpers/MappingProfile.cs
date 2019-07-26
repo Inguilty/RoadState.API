@@ -9,10 +9,10 @@ namespace RoadState.Backend.Helpers
     {
         public MappingProfile()
         {
-            CreateMap<RoadState.Data.User, UserTransportModel>();
-            CreateMap<UserTransportModel, RoadState.Data.User>();
-            CreateMap<RoadState.Backend.Models.User, UserTransportModel>();
-            CreateMap<UserTransportModel, RoadState.Backend.Models.User>();
+            CreateMap<User, UserTransportModel>();
+            CreateMap<UserTransportModel, User>();
+            CreateMap<UserModel, UserTransportModel>();
+            CreateMap<UserTransportModel, UserModel>();
         }
     }
 }

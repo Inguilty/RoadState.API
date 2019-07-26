@@ -1,13 +1,8 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using RoadState.Backend.Helpers;
 using RoadState.Backend.Models;
 using RoadState.BusinessLayer.Shared.Helpers;
@@ -27,8 +22,7 @@ namespace RoadState.Backend.Controllers
 
         public AuthorizationController(
             IUserService userService,
-            IMapper mapper,
-            IOptions<AppSettings> appSettings)
+            IMapper mapper, IOptions<AppSettings> appSettings)
         {
             _userService = userService;
             _mapper = mapper;
@@ -37,39 +31,25 @@ namespace RoadState.Backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody]User userDto)
+        public async Task<IActionResult> Authenticate([FromBody]UserModel userModelDto)
         {
-            var user = await _userService.Authenticate(userDto.UserName, userDto.Password);
+            var user = await _userService.Authenticate(userModelDto.UserName, userModelDto.Password, _appSettings.Secret);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-
             return Ok(new
             {
                 id = user.Id,
-                token = tokenString
+                token = user.Token
             });
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody]User userDto)
+        public async Task<IActionResult> Register([FromBody]UserModel userModelDto)
         {
-            var user = _mapper.Map<UserTransportModel>(userDto);
+            var user = _mapper.Map<UserTransportModel>(userModelDto);
 
             try
             {
@@ -82,22 +62,16 @@ namespace RoadState.Backend.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        [HttpPut("{id}/update")]
+        public IActionResult Update([FromBody]UserModel userModelDto)
         {
-            var user = _mapper.Map<User>(_userService.GetById(id));
-            return Ok(user);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Update(string id, [FromBody]User userDto)
-        {
-            var user = _mapper.Map<UserTransportModel>(userDto);
-            user.Id = id;
+            var user = _mapper.Map<UserTransportModel>(userModelDto);
 
             try
             {
-                _userService.Update(user, user.Password);
+                var updated = _userService.Update(user, userModelDto.NewPassword);
+                if(!updated.Result)
+                    throw new AppException("Your old password is wrong!");
                 return Ok();
             }
             catch (AppException ex)

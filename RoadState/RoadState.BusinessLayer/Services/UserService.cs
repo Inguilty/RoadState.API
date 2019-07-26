@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RoadState.BusinessLayer.Shared.Helpers;
 using RoadState.BusinessLayer.Shared.Interfaces;
 using RoadState.BusinessLayer.Shared.TransportModels;
@@ -23,7 +26,7 @@ namespace RoadState.BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public async Task<UserTransportModel> Authenticate(string username, string password)
+        public async Task<UserTransportModel> Authenticate(string username, string password, string appSettings)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return null;
@@ -38,6 +41,22 @@ namespace RoadState.BusinessLayer.Services
 
             var authenticatedUser = _mapper.Map<UserTransportModel>(user);
 
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(appSettings);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, user.Id)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            authenticatedUser.Token = tokenString;
+
             return authenticatedUser;
         }
 
@@ -51,7 +70,7 @@ namespace RoadState.BusinessLayer.Services
         public async Task<UserTransportModel> Create(UserTransportModel user, string password)
         {
             var createdUser = _mapper.Map<User>(user);
-            
+
             if (string.IsNullOrWhiteSpace(password))
                 throw new AppException("Password is required");
 
@@ -68,40 +87,37 @@ namespace RoadState.BusinessLayer.Services
 
             await _context.Users.AddAsync(createdUser);
             await _context.SaveChangesAsync();
- 
+
             return user;
         }
 
-        public async void Update(UserTransportModel userParam, string password = null)
+        public async Task<bool> Update(UserTransportModel userParam, string newPassword)
         {
             var user = await _context.Users.FindAsync(userParam.Id);
 
             if (user == null)
-                throw new AppException("User not found");
+                return false;
 
-            if (userParam.UserName != user.UserName)
+            if (!string.IsNullOrEmpty(userParam.AvatarUrl))
             {
-                // username has changed so check if the new username is already taken
-                if (_context.Users.Any(x => x.UserName == userParam.UserName))
-                    throw new AppException($"Username {userParam.UserName} is already taken");
-                if (_context.Users.Any(x => x.Email == userParam.Email))
-                    throw new AppException($"Email {userParam.Email} is already taken");
+                user.AvatarUrl = userParam.AvatarUrl;
             }
 
-            // update user properties
-            user.UserName = userParam.UserName;
+            if (!VerifyPasswordHash(userParam.Password, user.PasswordHash, user.PasswordSalt))
+                return false;
 
             // update password if it was entered
-            if (!string.IsNullOrWhiteSpace(password))
+            if (!string.IsNullOrWhiteSpace(newPassword))
             {
-                CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+                CreatePasswordHash(userParam.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
             }
 
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
+            return true;
         }
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
