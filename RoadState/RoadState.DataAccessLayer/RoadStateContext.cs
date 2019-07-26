@@ -17,7 +17,7 @@ namespace RoadState.DataAccessLayer
         public DbSet<BugReportRate> BugReportRates { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Photo> Photos { get; set; }
-        public DbSet<UserLikes> UserLikes { get; set; }
+        public DbSet<UserLike> UserLikes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,10 +57,10 @@ namespace RoadState.DataAccessLayer
             modelBuilder.Entity<Comment>().HasOne(x => x.BugReport)
                 .WithMany(y => y.Comments)
                 .HasForeignKey(x => x.BugReportId);
-            modelBuilder.Entity<UserLikes>().HasOne(x => x.User)
+            modelBuilder.Entity<UserLike>().HasOne(x => x.User)
                 .WithMany(y => y.UserLikes)
                 .HasForeignKey(x => x.UserId);
-            modelBuilder.Entity<UserLikes>().HasOne(x => x.Comment)
+            modelBuilder.Entity<UserLike>().HasOne(x => x.Comment)
                 .WithMany(y => y.UserLikes)
                 .HasForeignKey(x => x.CommentId);
         }

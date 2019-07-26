@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RoadState.Data
 {
-    public class UserLikes : BaseEntity
+    public class UserLike : BaseEntity
     {
         public string UserId { get; set; }
         public User User { get; set; }

@@ -9,6 +9,7 @@ using RoadState.DataAccessLayer;
 using AutoMapper;
 using RoadState.BusinessLayer;
 using Microsoft.EntityFrameworkCore;
+using RoadState.DataAccessLayer.Interfaces;
 
 namespace RoadState.Backend.Controllers
 {
@@ -16,17 +17,19 @@ namespace RoadState.Backend.Controllers
     [ApiController]
     public class BugReportController : ControllerBase
     {
-        private readonly Repository _repository;
+        private readonly IBugReportFinder bugReportFinder;
+        private readonly IBugReportRater bugReportRater;
         private readonly IMapper _mapper;
-        public BugReportController(Repository repository, IMapper mapper)
+        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper)
         {
-            _repository = repository;
-            _mapper = mapper;
+            this.bugReportFinder = bugReportFinder;
+            this.bugReportRater = bugReportRater;
+            this._mapper = mapper;
         }
         [HttpGet]
         public IActionResult GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
-            var bugReports = _repository.GetBugReports().Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
+            var bugReports = bugReportFinder.GetBugReports(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
             if (bugReports.Count == 0) return NotFound();
             return Ok(bugReports);
         }
@@ -40,16 +43,15 @@ namespace RoadState.Backend.Controllers
         public IActionResult GetBugReport(int id)
         {
 
-            var bugReport = _repository.GetBugReports().FirstOrDefault(x => x.Id == id);
-            var a = _repository.GetBugReports();
+            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).Single();
             if (bugReport is null) return NotFound();
-            return Ok(_mapper.Map<BugReportDTO>(bugReport));
+            return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
         [HttpPost("{id}/rate")]
         public IActionResult RateBugReport(int id, string rate)
         {
-            var bugReport = _repository.GetBugReport(id);
+            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).Single();
             if (bugReport == null) return NotFound();
             return Ok();
         }
