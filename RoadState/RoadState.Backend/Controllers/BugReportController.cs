@@ -4,6 +4,7 @@ using RoadState.BusinessLayer;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RoadState.Backend.Controllers
 {
@@ -21,10 +22,10 @@ namespace RoadState.Backend.Controllers
             this._mapper = mapper;
         }
         [HttpGet]
-        public IActionResult GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
+        public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
-            var bugReports = bugReportFinder.GetBugReports(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
-            if (bugReports.Count == 0) return NotFound();
+            var bugReports = await bugReportFinder.GetBugReportsAsync(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax));
+            if (bugReports.Count == 0) return NotFound("no bug reports in this square");
             return Ok(bugReports);
         }
 
@@ -34,19 +35,21 @@ namespace RoadState.Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetBugReport(int id)
+        public async Task<IActionResult> GetBugReportAsync(int id)
         {
 
-            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).FirstOrDefault();
+            var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
+            var bugReport = bugReports.FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
             return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
         [HttpPost("{id}/rate")]
-        public IActionResult RateBugReport(int id, string rate)
+        public async Task<IActionResult> RateBugReportAsync(int id, string rate)
         {
-            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).Single();
-            if (bugReport == null) return NotFound("No bug report found");
+            var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
+            var bugReport = bugReports.FirstOrDefault();
+            if (bugReport is null) return NotFound("No bug report found");
             return Ok();
         }
     }

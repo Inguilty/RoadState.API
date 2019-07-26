@@ -5,22 +5,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RoadState.DataAccessLayer
 {
     public interface IBugReportRater
     {
-        void RateBugReport(BugReport bugReport, User user, bool hasAgreed);
+        Task RateBugReportAsync(BugReport bugReport, User user, bool hasAgreed);
     }
 
     public interface IBugReportFinder
     {
-        IEnumerable<BugReport> GetBugReports(Expression<Func<BugReport, bool>> predicate);
+        Task<List<BugReport>> GetBugReportsAsync(Expression<Func<BugReport, bool>> predicate);
     }
 
     public interface IBugReportCreator
     {
-        void CreateBugReport(BugReport bugReport);
+        Task CreateBugReportAsync(BugReport bugReport);
     }
 
     public class BugReportStorage : IBugReportCreator, IBugReportFinder, IBugReportRater
@@ -31,15 +32,15 @@ namespace RoadState.DataAccessLayer
             this._context = context;
         }
 
-        public void CreateBugReport(BugReport bugReport)
+        public async Task CreateBugReportAsync(BugReport bugReport)
         {
-            this._context.BugReports.AddAsync(bugReport);
-            this._context.SaveChangesAsync();
+            await this._context.BugReports.AddAsync(bugReport);
+            await this._context.SaveChangesAsync();
         }
 
-        public void RateBugReport(BugReport bugReport, User user, bool hasAgreed)
+        public async Task RateBugReportAsync(BugReport bugReport, User user, bool hasAgreed)
         {
-            this._context.BugReportRates.AddAsync(new BugReportRate
+            await this._context.BugReportRates.AddAsync(new BugReportRate
             {
                 User = user,
                 UserId = user.Id,
@@ -47,12 +48,12 @@ namespace RoadState.DataAccessLayer
                 BugReportId = bugReport.Id,
                 HasAgreed = hasAgreed,
             });
-            this._context.SaveChangesAsync();
+            await this._context.SaveChangesAsync();
         }
 
-        public IEnumerable<BugReport> GetBugReports(Expression<Func<BugReport, bool>> predicate)
+        public async Task<List<BugReport>> GetBugReportsAsync(Expression<Func<BugReport, bool>> predicate)
         {
-            return this._context.BugReports.Include(x => x.Author).Where(predicate);
+            return await this._context.BugReports.Include(x => x.Author).Where(predicate).ToListAsync();
         }
     }
 }

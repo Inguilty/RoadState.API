@@ -1,20 +1,22 @@
-﻿using RoadState.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RoadState.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RoadState.DataAccessLayer
 {
     public interface IPhotoCreator
     {
-        void CreatePhoto(Photo photo);
+        Task CreatePhotoAsync(Photo photo);
     }
 
     public interface IPhotoFinder
     {
-        IEnumerable<Photo> GetPhotoes(Expression<Func<Photo, bool>> predicate);
+        Task<List<Photo>> GetPhotoesAsync(Expression<Func<Photo, bool>> predicate);
     }
 
     public class PhotoStorage : IPhotoCreator, IPhotoFinder
@@ -25,15 +27,15 @@ namespace RoadState.DataAccessLayer
             this._context = context;
         }
 
-        public void CreatePhoto(Photo photo)
+        public async Task CreatePhotoAsync(Photo photo)
         {
-            this._context.AddAsync(photo);
-            this._context.SaveChangesAsync();
+            await this._context.AddAsync(photo);
+            await this._context.SaveChangesAsync();
         }
 
-        public IEnumerable<Photo> GetPhotoes(Expression<Func<Photo, bool>> predicate)
+        public async Task<List<Photo>> GetPhotoesAsync(Expression<Func<Photo, bool>> predicate)
         {
-            return _context.Photos.Where(predicate);
+            return await _context.Photos.Where(predicate).ToListAsync();
         }
     }
 }
