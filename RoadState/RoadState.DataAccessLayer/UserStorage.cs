@@ -1,5 +1,4 @@
 ﻿using RoadState.Data;
-using RoadState.DataAccessLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,21 @@ using System.Text;
 
 namespace RoadState.DataAccessLayer
 {
+    public interface IUserCreator
+    {
+        void CreateUser(User user);
+    }
+
+    public interface IUserFinder
+    {
+        IEnumerable<User> GetUsers(Expression<Func<User, bool>> predicate);
+    }
+
+    public interface IUserUpdator
+    {
+        void UpdateUser(User user);
+    }
+
     public class UserStorage : IUserCreator, IUserFinder, IUserUpdator
     {
         private RoadStateContext _context;
@@ -17,8 +31,8 @@ namespace RoadState.DataAccessLayer
         }
         public void CreateUser(User user)
         {
-            this._context.Users.Add(user);
-            this._context.SaveChanges();
+            this._context.Users.AddAsync(user);
+            this._context.SaveChangesAsync();
         }
 
         public IEnumerable<User> GetUsers(Expression<Func<User, bool>> predicate)
@@ -29,7 +43,7 @@ namespace RoadState.DataAccessLayer
         public void UpdateUser(User user)
         {
             this._context.Users.Update(user);
-            this._context.SaveChanges();
+            this._context.SaveChangesAsync();
         }
     }
 }

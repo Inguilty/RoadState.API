@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RoadState.Data;
-using RoadState.DataAccessLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,22 @@ using System.Text;
 
 namespace RoadState.DataAccessLayer
 {
-    public class BugReportStorage : IBugReportFinder, IBugReportCreator, IBugReportRater
+    public interface IBugReportRater
+    {
+        void RateBugReport(BugReport bugReport, User user, bool hasAgreed);
+    }
+
+    public interface IBugReportFinder
+    {
+        IEnumerable<BugReport> GetBugReports(Expression<Func<BugReport, bool>> predicate);
+    }
+
+    public interface IBugReportCreator
+    {
+        void CreateBugReport(BugReport bugReport);
+    }
+
+    public class BugReportStorage : IBugReportCreator, IBugReportFinder, IBugReportRater
     {
         private RoadStateContext _context;
         public BugReportStorage(RoadStateContext context)
@@ -19,13 +33,13 @@ namespace RoadState.DataAccessLayer
 
         public void CreateBugReport(BugReport bugReport)
         {
-            this._context.BugReports.Add(bugReport);
-            this._context.SaveChanges();
+            this._context.BugReports.AddAsync(bugReport);
+            this._context.SaveChangesAsync();
         }
 
         public void RateBugReport(BugReport bugReport, User user, bool hasAgreed)
         {
-            this._context.BugReportRates.Add(new BugReportRate
+            this._context.BugReportRates.AddAsync(new BugReportRate
             {
                 User = user,
                 UserId = user.Id,
@@ -33,7 +47,7 @@ namespace RoadState.DataAccessLayer
                 BugReportId = bugReport.Id,
                 HasAgreed = hasAgreed,
             });
-            this._context.SaveChanges();
+            this._context.SaveChangesAsync();
         }
 
         public IEnumerable<BugReport> GetBugReports(Expression<Func<BugReport, bool>> predicate)

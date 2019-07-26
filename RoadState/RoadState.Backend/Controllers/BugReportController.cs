@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RoadState.BusinessLayer;
 using RoadState.Data;
-using RoadState.DataAccessLayer.Interfaces;
+using RoadState.DataAccessLayer;
 using System.Linq;
 
 namespace RoadState.Backend.Controllers
@@ -37,8 +37,8 @@ namespace RoadState.Backend.Controllers
         public IActionResult GetBugReport(int id)
         {
 
-            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).Single();
-            if (bugReport is null) return NotFound();
+            var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).FirstOrDefault();
+            if (bugReport is null) return NotFound("No bug report found");
             return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
@@ -46,7 +46,7 @@ namespace RoadState.Backend.Controllers
         public IActionResult RateBugReport(int id, string rate)
         {
             var bugReport = bugReportFinder.GetBugReports(x => x.Id == id).Single();
-            if (bugReport == null) return NotFound();
+            if (bugReport == null) return NotFound("No bug report found");
             return Ok();
         }
     }

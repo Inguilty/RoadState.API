@@ -10,14 +10,14 @@ namespace RoadState.DataAccessLayer
     { 
         public RoadStateContext(DbContextOptions<RoadStateContext> options) : base(options)
         {
-            // Database.EnsureCreated();
+            Database.EnsureCreated();
         }
         public DbSet<BugReport> BugReports { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<BugReportRate> BugReportRates { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Photo> Photos { get; set; }
-        public DbSet<UserLike> UserLikes { get; set; }
+        public DbSet<UserMark> UserLikes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,10 +57,10 @@ namespace RoadState.DataAccessLayer
             modelBuilder.Entity<Comment>().HasOne(x => x.BugReport)
                 .WithMany(y => y.Comments)
                 .HasForeignKey(x => x.BugReportId);
-            modelBuilder.Entity<UserLike>().HasOne(x => x.User)
+            modelBuilder.Entity<UserMark>().HasOne(x => x.User)
                 .WithMany(y => y.UserLikes)
                 .HasForeignKey(x => x.UserId);
-            modelBuilder.Entity<UserLike>().HasOne(x => x.Comment)
+            modelBuilder.Entity<UserMark>().HasOne(x => x.Comment)
                 .WithMany(y => y.UserLikes)
                 .HasForeignKey(x => x.CommentId);
         }

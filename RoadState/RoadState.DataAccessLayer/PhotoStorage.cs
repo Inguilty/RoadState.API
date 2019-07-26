@@ -1,5 +1,4 @@
 ﻿using RoadState.Data;
-using RoadState.DataAccessLayer.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,16 @@ using System.Text;
 
 namespace RoadState.DataAccessLayer
 {
+    public interface IPhotoCreator
+    {
+        void CreatePhoto(Photo photo);
+    }
+
+    public interface IPhotoFinder
+    {
+        IEnumerable<Photo> GetPhotoes(Expression<Func<Photo, bool>> predicate);
+    }
+
     public class PhotoStorage : IPhotoCreator, IPhotoFinder
     {
         private RoadStateContext _context;
@@ -18,8 +27,8 @@ namespace RoadState.DataAccessLayer
 
         public void CreatePhoto(Photo photo)
         {
-            this._context.Add(photo);
-            this._context.SaveChanges();
+            this._context.AddAsync(photo);
+            this._context.SaveChangesAsync();
         }
 
         public IEnumerable<Photo> GetPhotoes(Expression<Func<Photo, bool>> predicate)

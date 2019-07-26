@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RoadState.Backend.Automapper;
 using RoadState.DataAccessLayer;
-using RoadState.DataAccessLayer.Interfaces;
 using System;
 
 namespace RoadState.Backend
