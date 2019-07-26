@@ -13,6 +13,6 @@ namespace RoadState.Data
         public string Text { get; set; }
         public DateTime PublishDate { get; set; }
 
-        public List<UserLikes> UserLikes { get; set; } = new List<UserLikes>();
+        public List<UserMark> UserLikes { get; set; } = new List<UserMark>();
     }
 }
