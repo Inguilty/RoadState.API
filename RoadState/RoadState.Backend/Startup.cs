@@ -28,11 +28,31 @@ namespace RoadState.Backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<RoadStateContext>(options => options.UseSqlServer
+                (Configuration.GetConnectionString("DefaultConnection")));
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            services.AddScoped<IBugReportCreator, BugReportStorage>();
+            services.AddScoped<IBugReportFinder, BugReportStorage>();
+            services.AddScoped<IBugReportRater, BugReportStorage>();
+
+            services.AddScoped<ICommentCreator, CommentStorage>();
+            services.AddScoped<ICommentLiker, CommentStorage>();
+
+            services.AddScoped<IPhotoCreator, PhotoStorage>();
+            services.AddScoped<IPhotoFinder, PhotoStorage>();
+
+            services.AddScoped<IUserCreator, UserStorage>();
+            services.AddScoped<IUserFinder, UserStorage>();
+            services.AddScoped<IUserUpdator, UserStorage>();
+
             services.AddCors();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<RoadStateContext>(options =>
-            options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
-            //services.AddMvc();
+            options.UseSqlServer(Configuration["DefaultConnection:ConnectionString"]));
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
