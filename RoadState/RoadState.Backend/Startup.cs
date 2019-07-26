@@ -26,7 +26,6 @@ namespace RoadState.Backend
         {
             services.AddDbContext<RoadStateContext>(options => options.UseSqlServer
             (Configuration.GetConnectionString("DefaultConnection")));
-            var currentDbContext = services.BuildServiceProvider().GetService<RoadStateContext>();
             var mapperConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
