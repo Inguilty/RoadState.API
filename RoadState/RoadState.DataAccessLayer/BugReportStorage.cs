@@ -1,4 +1,5 @@
-﻿using RoadState.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RoadState.Data;
 using RoadState.DataAccessLayer.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace RoadState.DataAccessLayer
 
         public IEnumerable<BugReport> GetBugReports(Expression<Func<BugReport, bool>> predicate)
         {
-            return this._context.BugReports.Where(predicate);
+            return this._context.BugReports.Include(x => x.Author).Where(predicate);
         }
     }
 }
