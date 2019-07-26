@@ -23,7 +23,7 @@ namespace RoadState.Backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<FormOptions>(x => x.MultipartBodyLengthLimit = 1_074_790_400); // Max file size
+            services.Configure<FormOptions>(x => x.MultipartBodyLengthLimit = 1_074_790_400);
             services.AddDbContext<RoadStateContext>(options => options.UseSqlServer
             (Configuration.GetConnectionString("DefaultConnection")));
             var mapperConfig = new MapperConfiguration(mc =>
