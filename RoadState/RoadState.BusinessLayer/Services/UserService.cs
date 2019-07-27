@@ -29,13 +29,15 @@ namespace RoadState.BusinessLayer.Services
         private readonly IUserFinder _userFinder;
         private readonly IUserCreator _userCreator;
         private readonly IMapper _mapper;
+        private readonly IJwtCreator _jwtCreator;
 
-        public UserService(IMapper mapper, IUserUpdator userUpdater, IUserFinder userFinder, IUserCreator userCreator)
+        public UserService(IMapper mapper, IUserUpdator userUpdater, IUserFinder userFinder, IUserCreator userCreator, IJwtCreator jwtCreator)
         {
             _userCreator = userCreator;
             _userFinder = userFinder;
             _userUpdater = userUpdater;
             _mapper = mapper;
+            _jwtCreator = jwtCreator;
         }
 
         public async Task<UserAuthenticateResult> Authenticate(string username, string password, string appSettings)
@@ -51,25 +53,11 @@ namespace RoadState.BusinessLayer.Services
                     throw new UserNotFoundException("User not found!");
 
                 if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                    throw new WrongCredentialsException("You entered wrong old password!");
+                    throw new WrongCredentialsException("You entered wrong password!");
 
                 var authenticatedUser = _mapper.Map<UserDto>(user);
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(appSettings);
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim(ClaimTypes.Name, user.Id)
-                    }),
-                    Expires = DateTime.UtcNow.AddHours(1),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
-
-                authenticatedUser.Token = tokenString;
+                authenticatedUser.Token = _jwtCreator.CreateJwt(appSettings, user.Id);
 
                 return new UserAuthenticateResult
                 {

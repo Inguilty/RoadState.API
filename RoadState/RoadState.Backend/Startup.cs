@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using RoadState.Backend.Helpers;
+using RoadState.BusinessLayer.Helpers;
 using RoadState.BusinessLayer.Services;
 using RoadState.DataAccessLayer;
 
@@ -27,6 +28,7 @@ namespace RoadState.Backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IJwtCreator, JwtCreator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IBugReportCreator, BugReportStorage>();
             services.AddScoped<IBugReportFinder, BugReportStorage>();
