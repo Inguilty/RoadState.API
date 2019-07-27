@@ -1,123 +1,187 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using RoadState.BusinessLayer.Shared.Helpers;
-using RoadState.BusinessLayer.Shared.Interfaces;
-using RoadState.BusinessLayer.Shared.TransportModels;
+using RoadState.BusinessLayer.Helpers;
+using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
 
 namespace RoadState.BusinessLayer.Services
 {
+    public interface IUserService
+    {
+        Task<UserAuthenticateResult> Authenticate(string username, string password, string appSettings);
+        Task<UserDto> GetById(string id);
+        Task<UserAuthenticateResult> Create(UserDto user, string password);
+        Task<UserUpdateResult> Update(UserDto user, string newPassword);
+    }
+
     public class UserService : IUserService
     {
-        private readonly RoadStateContext _context;
+        private readonly IUserUpdator _userUpdater;
+        private readonly IUserFinder _userFinder;
+        private readonly IUserCreator _userCreator;
         private readonly IMapper _mapper;
 
-        public UserService(RoadStateContext context, IMapper mapper)
+        public UserService(IMapper mapper, IUserUpdator userUpdater, IUserFinder userFinder, IUserCreator userCreator)
         {
-            _context = context;
+            _userCreator = userCreator;
+            _userFinder = userFinder;
+            _userUpdater = userUpdater;
             _mapper = mapper;
         }
 
-        public async Task<UserTransportModel> Authenticate(string username, string password, string appSettings)
+        public async Task<UserAuthenticateResult> Authenticate(string username, string password, string appSettings)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                return null;
-
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == username);
-
-            if (user == null)
-                return null;
-
-            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
-
-            var authenticatedUser = _mapper.Map<UserTransportModel>(user);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(appSettings);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            try
             {
-                Subject = new ClaimsIdentity(new Claim[]
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                    throw new WrongCredentialsException("Wrong username or password!");
+
+                var result = await _userFinder.GetUsersAsync(x => x.UserName == username);
+                var user = result.FirstOrDefault();
+                if (user == null)
+                    throw new UserNotFoundException("User not found!");
+
+                if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                    throw new WrongCredentialsException("You entered wrong old password!");
+
+                var authenticatedUser = _mapper.Map<UserDto>(user);
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(appSettings);
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    new Claim(ClaimTypes.Name, user.Id)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.Name, user.Id)
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
 
-            authenticatedUser.Token = tokenString;
+                authenticatedUser.Token = tokenString;
 
-            return authenticatedUser;
+                return new UserAuthenticateResult
+                {
+                    User = authenticatedUser
+                };
+            }
+            catch (UserNotFoundException e)
+            {
+                return new UserAuthenticateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
+            catch (WrongCredentialsException e)
+            {
+                return new UserAuthenticateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
+            catch (Exception e)
+            {
+                return new UserAuthenticateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
         }
 
-        public async Task<UserTransportModel> GetById(string id)
+        public async Task<UserDto> GetById(string id)
         {
-            var user = await _context.Users.FindAsync(id);
-            var foundUser = _mapper.Map<UserTransportModel>(user);
+            var result = await _userFinder.GetUsersAsync(x => x.Id == id);
+            var user = result.FirstOrDefault();
+            if (user == null)
+                throw new UserNotFoundException("User not found!");
+            var foundUser = _mapper.Map<UserDto>(user);
             return foundUser;
         }
 
-        public async Task<UserTransportModel> Create(UserTransportModel user, string password)
+        public async Task<UserAuthenticateResult> Create(UserDto user, string password)
         {
-            var createdUser = _mapper.Map<User>(user);
+            try
+            {
+                var createdUser = _mapper.Map<User>(user);
 
-            if (string.IsNullOrWhiteSpace(password))
-                throw new AppException("Password is required");
+                if (string.IsNullOrWhiteSpace(password))
+                    throw new WrongCredentialsException("Password is required");
 
-            if (await _context.Users.AnyAsync(x => x.UserName == createdUser.UserName))
-                throw new AppException($"Username {createdUser.UserName} is already taken");
+                var checkUserName = await _userFinder.GetUsersAsync(x => x.UserName == createdUser.UserName);
+                if (checkUserName.FirstOrDefault() == null)
+                    throw new WrongCredentialsException($"Username {createdUser.UserName} is already taken");
 
-            if (await _context.Users.AnyAsync(x => x.Email == createdUser.Email))
-                throw new AppException($"Email {createdUser.Email} is already taken");
+                var checkEmail = await _userFinder.GetUsersAsync(x => x.Email == createdUser.Email);
 
-            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+                if (checkEmail.FirstOrDefault() == null)
+                    throw new WrongCredentialsException($"Email {createdUser.Email} is already taken");
 
-            createdUser.PasswordHash = passwordHash;
-            createdUser.PasswordSalt = passwordSalt;
+                CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            await _context.Users.AddAsync(createdUser);
-            await _context.SaveChangesAsync();
+                createdUser.PasswordHash = passwordHash;
+                createdUser.PasswordSalt = passwordSalt;
 
-            return user;
+                await _userCreator.CreateUserAsync(createdUser);
+
+                return new UserAuthenticateResult
+                {
+                    User = user
+                };
+            }
+            catch (WrongCredentialsException e)
+            {
+                return new UserAuthenticateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
+            catch (Exception e)
+            {
+                return new UserAuthenticateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
         }
 
-        public async Task<bool> Update(UserTransportModel userParam, string newPassword)
+        public async Task<UserUpdateResult> Update(UserDto userParam, string newPassword)
         {
-            var user = await _context.Users.FindAsync(userParam.Id);
-
-            if (user == null)
-                return false;
-
-            if (!string.IsNullOrEmpty(userParam.AvatarUrl))
+            try
             {
-                user.AvatarUrl = userParam.AvatarUrl;
+                var result = await _userFinder.GetUsersAsync(x => x.Id == userParam.Id);
+                var user = result.FirstOrDefault();
+
+                if (user == null)
+                    throw new UserNotFoundException("User not found!");
+
+                if (!string.IsNullOrEmpty(userParam.AvatarUrl))
+                {
+                    user.AvatarUrl = userParam.AvatarUrl;
+                }
+
+                if (!VerifyPasswordHash(userParam.Password, user.PasswordHash, user.PasswordSalt))
+                    throw new WrongCredentialsException("You entered wrong old password!");
+
+                // update password if it was entered
+                if (!string.IsNullOrWhiteSpace(newPassword))
+                {
+                    CreatePasswordHash(userParam.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+                }
+
+                await _userUpdater.UpdateUserAsync(user);
+                return new UserUpdateResult();
             }
-
-            if (!VerifyPasswordHash(userParam.Password, user.PasswordHash, user.PasswordSalt))
-                return false;
-
-            // update password if it was entered
-            if (!string.IsNullOrWhiteSpace(newPassword))
+            catch (UserNotFoundException e)
             {
-                CreatePasswordHash(userParam.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-                user.PasswordHash = passwordHash;
-                user.PasswordSalt = passwordSalt;
+                return new UserUpdateResult {ErrorOccured = true, ErrorMessage = e.Message};
             }
-
-            _context.Users.Update(user);
-            _context.SaveChanges();
-            return true;
+            catch (WrongCredentialsException e)
+            {
+                return new UserUpdateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
+            catch (Exception e)
+            {
+                return new UserUpdateResult { ErrorOccured = true, ErrorMessage = e.Message };
+            }
         }
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

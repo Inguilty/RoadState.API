@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RoadState.Backend.Models
 {
-    public class UserModel
+    public class UserProfile
     {
         public string Id { get; set; }
         public string Email { get; set; }

@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RoadState.Backend.Helpers;
 using RoadState.Backend.Models;
-using RoadState.BusinessLayer.Shared.Helpers;
-using RoadState.BusinessLayer.Shared.Interfaces;
-using RoadState.BusinessLayer.Shared.TransportModels;
+using RoadState.BusinessLayer.Services;
+using RoadState.BusinessLayer.TransportModels;
 
 namespace RoadState.Backend.Controllers
 {
-    [Authorize]
     [Route("api/users")]
     [ApiController]
     public class AuthorizationController : ControllerBase
@@ -29,55 +27,44 @@ namespace RoadState.Backend.Controllers
             _appSettings = appSettings.Value;
         }
 
-        [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody]UserModel userModelDto)
+        public async Task<IActionResult> Authenticate([FromBody]UserProfile user)
         {
-            var user = await _userService.Authenticate(userModelDto.UserName, userModelDto.Password, _appSettings.Secret);
+            var result = await _userService.Authenticate(user.UserName, user.Password, _appSettings.Secret);
 
-            if (user == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
+            if (result.ErrorOccured)
+                return BadRequest(new { message = result.ErrorMessage });
 
             return Ok(new
             {
-                id = user.Id,
-                token = user.Token
+                id = result.User.Id,
+                token = result.User.Token
             });
         }
 
-        [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody]UserModel userModelDto)
+        public async Task<IActionResult> Register([FromBody]UserProfile userProfileDto)
         {
-            var user = _mapper.Map<UserTransportModel>(userModelDto);
+            var user = _mapper.Map<UserDto>(userProfileDto);
+            var result = await _userService.Create(user, user.Password);
 
-            try
-            {
-                await _userService.Create(user, user.Password);
-                return Ok();
-            }
-            catch (AppException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            if (result.ErrorOccured)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok();
         }
 
+        [Authorize]
         [HttpPut("{id}/update")]
-        public IActionResult Update([FromBody]UserModel userModelDto)
+        public async Task<IActionResult> Update([FromBody]UserProfile userProfileDto)
         {
-            var user = _mapper.Map<UserTransportModel>(userModelDto);
+            var user = _mapper.Map<UserDto>(userProfileDto);
+            var result = await _userService.Update(user, userProfileDto.NewPassword);
 
-            try
-            {
-                var updated = _userService.Update(user, userModelDto.NewPassword);
-                if(!updated.Result)
-                    throw new AppException("Your old password is wrong!");
-                return Ok();
-            }
-            catch (AppException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            if(result.ErrorOccured)
+                return BadRequest(new { message = result.ErrorMessage });
+
+            return Ok();
         }
     }
 }
