@@ -9,6 +9,9 @@ namespace RoadState.Data
         public string Id { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
+        public string AvatarUrl { get; set; }
+        public byte[] PasswordHash { get; set; }
+        public byte[] PasswordSalt { get; set; }
         public DateTime RegistrationDate { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }

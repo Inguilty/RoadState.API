@@ -64,7 +64,5 @@ namespace RoadState.DataAccessLayer
                 .WithMany(y => y.UserLikes)
                 .HasForeignKey(x => x.CommentId);
         }
-
-
     }
 }

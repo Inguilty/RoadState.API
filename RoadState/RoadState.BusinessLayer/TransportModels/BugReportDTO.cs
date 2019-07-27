@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace RoadState.BusinessLayer
+namespace RoadState.BusinessLayer.TransportModels
 {
     public class BugReportDto: BaseDto
     {

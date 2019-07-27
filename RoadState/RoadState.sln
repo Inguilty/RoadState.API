@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.DataAccessLayer",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.BusinessLayer", "RoadState.BusinessLayer\RoadState.BusinessLayer.csproj", "{C55337B1-90B7-43FA-B991-7FC5500F8E1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoadState.Data", "RoadState.Data\RoadState.Data.csproj", "{E2114587-1E51-4659-A869-07E3CE37C62F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoadState.Data", "RoadState.Data\RoadState.Data.csproj", "{E2114587-1E51-4659-A869-07E3CE37C62F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
