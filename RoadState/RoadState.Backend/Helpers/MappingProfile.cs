@@ -22,6 +22,8 @@ namespace RoadState.Backend.Helpers
                 .ForMember(c => c.Dislikes, opt => opt.MapFrom(c => c.UserLikes.FindAll(x => !x.HasLiked).Count));
             CreateMap<byte[], Photo>()
                 .ConvertUsing(b => new Photo() { Blob = b });
+            CreateMap<Photo, byte[]>()
+                .ConvertUsing(b => b.Blob);
             CreateMap<CreateBugReportDto, BugReport>()
                 .ForMember(b => b.State, opt => opt.MapFrom(b => b.ProblemLevel))
                 .ForMember(b => b.AuthorId, opt => opt.MapFrom(b => b.userId));
