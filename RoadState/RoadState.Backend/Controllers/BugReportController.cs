@@ -8,7 +8,6 @@ using RoadState.Data;
 using RoadState.DataAccessLayer;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,8 +30,8 @@ namespace RoadState.Backend.Controllers
             IBugReportRater bugReportRater, 
             IMapper mapper, 
             IUserFinder userFinder,
-            ICommentCreator commentCreator)
-        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder, IBugReportCreator bugReportCreator)
+            ICommentCreator commentCreator,
+            IBugReportCreator bugReportCreator)
         {
             this.userFinder = userFinder;
             this.bugReportFinder = bugReportFinder;
