@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoadState.DataAccessLayer;
 
 namespace RoadState.DataAccessLayer.Migrations
 {
     [DbContext(typeof(RoadStateContext))]
-    partial class RoadStateContextModelSnapshot : ModelSnapshot
+    [Migration("20190725144144_initialSeed")]
+    partial class initialSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,7 +55,7 @@ namespace RoadState.DataAccessLayer.Migrations
                             Description = "first bug report",
                             Latitude = 50.046199999999999,
                             Longitude = 36.315159999999999,
-                            PublishDate = new DateTime(2019, 7, 28, 11, 33, 33, 24, DateTimeKind.Local).AddTicks(1007),
+                            PublishDate = new DateTime(2019, 7, 25, 17, 41, 44, 288, DateTimeKind.Local).AddTicks(134),
                             Rating = 1,
                             State = "Low"
                         });
@@ -125,17 +127,11 @@ namespace RoadState.DataAccessLayer.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("AvatarUrl");
-
                     b.Property<string>("Email");
 
                     b.Property<double>("Latitude");
 
                     b.Property<double>("Longitude");
-
-                    b.Property<byte[]>("PasswordHash");
-
-                    b.Property<byte[]>("PasswordSalt");
 
                     b.Property<DateTime>("RegistrationDate");
 
@@ -152,12 +148,12 @@ namespace RoadState.DataAccessLayer.Migrations
                             Email = "123@gmail.com",
                             Latitude = 34.0,
                             Longitude = 55.0,
-                            RegistrationDate = new DateTime(2019, 7, 28, 11, 33, 33, 27, DateTimeKind.Local).AddTicks(1234),
+                            RegistrationDate = new DateTime(2019, 7, 25, 17, 41, 44, 292, DateTimeKind.Local).AddTicks(8054),
                             UserName = "dimasik"
                         });
                 });
 
-            modelBuilder.Entity("RoadState.Data.UserMark", b =>
+            modelBuilder.Entity("RoadState.Data.UserLikes", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,7 +213,7 @@ namespace RoadState.DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RoadState.Data.UserMark", b =>
+            modelBuilder.Entity("RoadState.Data.UserLikes", b =>
                 {
                     b.HasOne("RoadState.Data.Comment", "Comment")
                         .WithMany("UserLikes")

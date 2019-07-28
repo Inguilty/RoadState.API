@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RoadState.BusinessLayer;
+using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
-using AutoMapper;
-using RoadState.BusinessLayer;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace RoadState.Backend.Controllers
 {
@@ -16,19 +15,23 @@ namespace RoadState.Backend.Controllers
     [ApiController]
     public class BugReportController : ControllerBase
     {
-        private readonly RoadStateContext _context;
+        private readonly IUserFinder userFinder;
+        private readonly IBugReportFinder bugReportFinder;
+        private readonly IBugReportRater bugReportRater;
         private readonly IMapper _mapper;
-        public BugReportController(RoadStateContext context, IMapper mapper)
+        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder)
         {
-            _context = context;
-            _mapper = mapper;
+            this.userFinder = userFinder;
+            this.bugReportFinder = bugReportFinder;
+            this.bugReportRater = bugReportRater;
+            this._mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
+        public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
-            var bugReports = _context.BugReports.Include(x=>x.Author).Include(x=>x.BugReportRates).Include(x=>x.Comments).ThenInclude(x=>x.UserLikes).Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
-            if (bugReports.Count == 0) return NotFound();
-            return Ok(bugReports.Select(x=>_mapper.Map<BugReportDto>(x)));
+            var bugReports = await bugReportFinder.GetBugReportsAsync(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax));
+            if (bugReports.Count == 0) return NotFound("no bug reports in this square");
+            return Ok(bugReports);
         }
 
         private bool BugReportRectanglePredicate(BugReport bugReport, double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -37,19 +40,32 @@ namespace RoadState.Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBugReport(int id)
+        public async Task<IActionResult> GetBugReportAsync(int id)
         {
-            var bugReport = await _context.BugReports.Include(x=>x.Author).Include(x=>x.Comments).ThenInclude(x=>x.UserLikes).Include(x=>x.BugReportRates).FirstOrDefaultAsync(x=>x.Id == id);
-            if (bugReport is null) return NotFound();
-            var response = _mapper.Map<BugReportDto>(bugReport);
-            return Ok(response);
+
+            var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
+            var bugReport = bugReports.FirstOrDefault();
+            if (bugReport is null) return NotFound("No bug report found");
+            return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
+        [Authorize]
         [HttpPost("{id}/rate")]
-        public async Task<IActionResult> RateBugReport(int id, string rate)
+        public async Task<IActionResult> RateBugReportAsync(int id, string rate)
         {
-            var bugReport = await _context.BugReports.FindAsync(id);
-            if (bugReport == null) return NotFound();
+            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == id)).FirstOrDefault();
+            if (bugReport is null) return NotFound("No bug report found");
+            var user = (await userFinder.GetUsersAsync(x => x.Id == User.Identity.Name)).FirstOrDefault();
+            bool hasAgreed = rate == "agree";
+            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
+            if(hasAgreed)
+            {
+                bugReport.Rating++;
+            }
+            else
+            {
+                bugReport.Rating--;
+            }
             return Ok();
         }
     }
