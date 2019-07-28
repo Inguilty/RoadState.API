@@ -24,8 +24,7 @@ namespace RoadState.Backend.Controllers
         private readonly IBugReportRater bugReportRater;
         private readonly IBugReportCreator bugReportCreator;
         private readonly IMapper _mapper;
-        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder)
-        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IBugReportCreator bugReportCreator)
+        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder, IBugReportCreator bugReportCreator)
         {
             this.userFinder = userFinder;
             this.bugReportFinder = bugReportFinder;
@@ -112,6 +111,11 @@ namespace RoadState.Backend.Controllers
                 var newBR = _mapper.Map<BugReport>(createBR);
                 newBR.Photos = _mapper.Map<List<Photo>>(photos);
                 newBR.PublishDate = DateTime.Now;
+                var user = (await userFinder.GetUsersAsync(x => x.Id == newBR.AuthorId)).FirstOrDefault();
+                if(user != null)
+                {
+                    newBR.Author = user;
+                }
                 await bugReportCreator.CreateBugReportAsync(newBR);
             }
             else

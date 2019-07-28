@@ -20,6 +20,11 @@ namespace RoadState.Backend.Helpers
                 .ForMember(c => c.AuthorName, opt => opt.MapFrom(c => c.Author.UserName))
                 .ForMember(c => c.Likes, opt => opt.MapFrom(c => c.UserLikes.FindAll(x => x.HasLiked).Count))
                 .ForMember(c => c.Dislikes, opt => opt.MapFrom(c => c.UserLikes.FindAll(x => !x.HasLiked).Count));
+            CreateMap<byte[], Photo>()
+                .ConvertUsing(b => new Photo() { Blob = b });
+            CreateMap<CreateBugReportDto, BugReport>()
+                .ForMember(b => b.State, opt => opt.MapFrom(b => b.ProblemLevel))
+                .ForMember(b => b.AuthorId, opt => opt.MapFrom(b => b.userId));
         }
     }
 }

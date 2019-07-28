@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RoadState.BusinessLayer
+namespace RoadState.BusinessLayer.TransportModels
 {
     public class CreateBugReportDto
     {
@@ -12,6 +12,7 @@ namespace RoadState.BusinessLayer
         public string Description { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
+        public string userId { get; set; }
 
     }
 }
