@@ -13,6 +13,5 @@ namespace RoadState.BusinessLayer.TransportModels
         public DateTime PublishDate { get; set; }
         public Location Location { get; set; }
         public List<CommentDto> Comments { get; set; }
-        public List<byte[]> Blobs { get; set; }
     }
 }
