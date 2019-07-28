@@ -98,12 +98,12 @@ namespace RoadState.BusinessLayer.Services
                     throw new WrongCredentialsException("Password is required");
 
                 var checkUserName = await _userFinder.GetUsersAsync(x => x.UserName == createdUser.UserName);
-                if (checkUserName.FirstOrDefault() == null)
+                if (checkUserName.FirstOrDefault() != null)
                     throw new WrongCredentialsException($"Username {createdUser.UserName} is already taken");
 
                 var checkEmail = await _userFinder.GetUsersAsync(x => x.Email == createdUser.Email);
 
-                if (checkEmail.FirstOrDefault() == null)
+                if (checkEmail.FirstOrDefault() != null)
                     throw new WrongCredentialsException($"Email {createdUser.Email} is already taken");
 
                 CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);

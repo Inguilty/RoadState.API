@@ -64,6 +64,8 @@ namespace RoadState.Backend.Controllers
             if(result.ErrorOccured)
                 return BadRequest(new { message = result.ErrorMessage });
 
+            var a = User.Identity.Name;
+
             return Ok();
         }
     }
