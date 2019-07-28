@@ -41,13 +41,16 @@ namespace RoadState.Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBugReportAsync(int id)
+        public async Task<IActionResult> GetBugReportAsync(int id, string userId)
         {
 
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
             var bugReport = bugReports.FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
-            return Ok(_mapper.Map<BugReportDto>(bugReport));
+            var hasUserRated = bugReport.BugReportRates.Count(x => x.UserId == userId) != 0;
+            var mapped = _mapper.Map<BugReportDto>(bugReport);
+            mapped.UserRate = hasUserRated ? bugReport.BugReportRates.FirstOrDefault(x => x.UserId == userId).HasAgreed ? "agree" : "disagree" : null;
+            return Ok(mapped);
         }
 
         [Authorize]
@@ -61,7 +64,6 @@ namespace RoadState.Backend.Controllers
             if (bugReport is null) return NotFound("No bug report found");
             var user = (await userFinder.GetUsersAsync(x => x.Id == userId)).FirstOrDefault();
             bool hasAgreed = userRateDTO.Rate == "agree";
-            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
             if (hasAgreed)
             {
                 bugReport.Rating++;
@@ -70,6 +72,7 @@ namespace RoadState.Backend.Controllers
             {
                 bugReport.Rating--;
             }
+            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
             return Ok();
         }
     }
