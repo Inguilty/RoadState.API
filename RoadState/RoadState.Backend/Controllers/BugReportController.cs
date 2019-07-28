@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadState.BusinessLayer;
+using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using RoadState.BusinessLayer.TransportModels;
 
 namespace RoadState.Backend.Controllers
 {
@@ -48,8 +49,7 @@ namespace RoadState.Backend.Controllers
         [HttpPost("{id}/rate")]
         public async Task<IActionResult> RateBugReportAsync(int id, string rate)
         {
-            var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
-            var bugReport = bugReports.FirstOrDefault();
+            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == id)).FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
             return Ok();
         }
