@@ -7,6 +7,8 @@ using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,7 +25,13 @@ namespace RoadState.Backend.Controllers
         private readonly IBugReportFinder bugReportFinder;
         private readonly IBugReportRater bugReportRater;
         private readonly IBugReportCreator bugReportCreator;
+        private readonly ICommentCreator commentCreator;
         private readonly IMapper _mapper;
+        public BugReportController(IBugReportFinder bugReportFinder, 
+            IBugReportRater bugReportRater, 
+            IMapper mapper, 
+            IUserFinder userFinder,
+            ICommentCreator commentCreator)
         public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder, IBugReportCreator bugReportCreator)
         {
             this.userFinder = userFinder;
@@ -31,6 +39,7 @@ namespace RoadState.Backend.Controllers
             this.bugReportRater = bugReportRater;
             this.bugReportCreator = bugReportCreator;
             this._mapper = mapper;
+            this.commentCreator = commentCreator;
         }
         [HttpGet]
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -46,25 +55,30 @@ namespace RoadState.Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBugReportAsync(int id)
+        public async Task<IActionResult> GetBugReportAsync(int id, string userId)
         {
 
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
             var bugReport = bugReports.FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
-            return Ok(_mapper.Map<BugReportDto>(bugReport));
+            var hasUserRated = bugReport.BugReportRates.Count(x => x.UserId == userId) != 0;
+            var mapped = _mapper.Map<BugReportDto>(bugReport);
+            mapped.UserRate = hasUserRated ? bugReport.BugReportRates.FirstOrDefault(x => x.UserId == userId).HasAgreed ? "agree" : "disagree" : null;
+            return Ok(mapped);
         }
 
         [Authorize]
         [HttpPost("{id}/rate")]
-        public async Task<IActionResult> RateBugReportAsync(int id, string rate)
+        public async Task<IActionResult> RateBugReportAsync([FromBody] UserRateDTO userRateDTO)
         {
-            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == id)).FirstOrDefault();
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadToken(userRateDTO.Token) as JwtSecurityToken;
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == userRateDTO.Id)).FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
-            var user = (await userFinder.GetUsersAsync(x => x.Id == User.Identity.Name)).FirstOrDefault();
-            bool hasAgreed = rate == "agree";
-            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
-            if(hasAgreed)
+            var user = (await userFinder.GetUsersAsync(x => x.Id == userId)).FirstOrDefault();
+            bool hasAgreed = userRateDTO.Rate == "agree";
+            if (hasAgreed)
             {
                 bugReport.Rating++;
             }
@@ -72,6 +86,7 @@ namespace RoadState.Backend.Controllers
             {
                 bugReport.Rating--;
             }
+            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
             return Ok();
         }
 
@@ -123,6 +138,40 @@ namespace RoadState.Backend.Controllers
                 return BadRequest();
             }
             return Ok();
+        }
+
+        [HttpPost("{bugReportId}/comment")]
+        public async Task<IActionResult> PostComment(int bugReportId, [FromBody] dynamic comment)
+        {
+            var commentDto = new CommentDto()
+            {
+                AuthorName = comment.authorName,
+                Dislikes = comment.dislikes,
+                Likes = comment.likes,
+                PublishDate = Convert.ToDateTime(comment.publishDate),
+                Text = comment.text
+            };
+            if (commentDto.AuthorName is null)
+            {
+                commentDto.AuthorName = "RoadStateGuest";
+            }
+            if ((await bugReportFinder.GetBugReportsAsync(x => x.Id == bugReportId)).Count == 0)
+            {
+                return NotFound("No such bug report");
+            }
+            if ((await userFinder.GetUsersAsync(x=> x.UserName == commentDto.AuthorName)).Count == 0)
+            {
+                return NotFound("No such users");
+            }
+            string userId = (await userFinder.GetUsersAsync(x => x.UserName == commentDto.AuthorName)).FirstOrDefault().Id;
+            await commentCreator.CreateCommentAsync(new Comment()
+            {
+                AuthorId = userId,
+                BugReportId = bugReportId,
+                PublishDate = commentDto.PublishDate,
+                Text = commentDto.Text
+            });
+            return NoContent();
         }
     }
 }

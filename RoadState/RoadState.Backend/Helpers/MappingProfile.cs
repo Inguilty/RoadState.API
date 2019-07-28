@@ -9,7 +9,7 @@ namespace RoadState.Backend.Helpers
     {
         public MappingProfile()
         {
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserDto>().ForMember(x=>x.Password, opt => opt.NullSubstitute("sth"));
             CreateMap<UserDto, User>();
             CreateMap<UserProfile, UserDto>();
             CreateMap<UserDto, UserProfile>();
