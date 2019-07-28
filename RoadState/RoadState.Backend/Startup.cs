@@ -116,7 +116,6 @@ namespace RoadState.Backend
 
             app.UseAuthentication();
             app.UseStaticFiles();
-            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

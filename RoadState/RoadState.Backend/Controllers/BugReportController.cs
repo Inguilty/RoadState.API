@@ -31,7 +31,7 @@ namespace RoadState.Backend.Controllers
         {
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax));
             if (bugReports.Count == 0) return NotFound("no bug reports in this square");
-            return Ok(bugReports);
+            return Ok(bugReports.Select(x=>_mapper.Map<BugReportDto>(x)));
         }
 
         private bool BugReportRectanglePredicate(BugReport bugReport, double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
