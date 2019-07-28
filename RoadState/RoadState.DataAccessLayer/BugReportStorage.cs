@@ -53,7 +53,11 @@ namespace RoadState.DataAccessLayer
 
         public async Task<List<BugReport>> GetBugReportsAsync(Expression<Func<BugReport, bool>> predicate)
         {
-            return await this._context.BugReports.Include(x => x.Author).Include(x => x.BugReportRates).Where(predicate).ToListAsync();
+            return await this._context.BugReports.Include(x => x.Author).
+                Include(x=>x.Comments).
+                ThenInclude(x=>x.UserLikes).
+                Include(x=>x.BugReportRates).
+                Where(predicate).ToListAsync();
         }
     }
 }

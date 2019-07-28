@@ -11,6 +11,8 @@ using RoadState.Backend.Helpers;
 using RoadState.Backend.Models;
 using RoadState.BusinessLayer.Services;
 using RoadState.BusinessLayer.TransportModels;
+using RoadState.DataAccessLayer;
+using System.Linq;
 
 namespace RoadState.Backend.Controllers
 {
@@ -21,14 +23,17 @@ namespace RoadState.Backend.Controllers
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly AppSettings _appSettings;
+        private readonly IUserFinder userFinder;
 
         public AuthorizationController(
             IUserService userService,
-            IMapper mapper, IOptions<AppSettings> appSettings)
+            IMapper mapper, IOptions<AppSettings> appSettings,
+            IUserFinder userFinder)
         {
             _userService = userService;
             _mapper = mapper;
             _appSettings = appSettings.Value;
+            this.userFinder = userFinder;
         }
 
         [HttpPost("authenticate")]
@@ -73,6 +78,14 @@ namespace RoadState.Backend.Controllers
             return Ok();
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserInfo(string userId)
+        {
+            if (userId is null) return BadRequest("Invalid input");
+            var result = await userFinder.GetUsersAsync(x => x.Id == userId);
+            if (result.Count == 0) return NotFound("No such user");
+            return Ok(_mapper.Map<UserDto>(result.FirstOrDefault()));
+        }
         [Authorize]
         [HttpGet("checkToken")]
         public async Task<IActionResult> CheckToken()
