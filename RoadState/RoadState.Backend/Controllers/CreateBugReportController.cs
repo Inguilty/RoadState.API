@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RoadState.BusinessLayer;
+using RoadState.Data;
+using RoadState.DataAccessLayer;
 
 namespace RoadState.Backend.Controllers
 {
@@ -14,6 +17,14 @@ namespace RoadState.Backend.Controllers
     [ApiController]
     public class CreateBugReportController : ControllerBase
     {
+        private readonly IMapper _mapper;
+        private readonly IBugReportCreator bugReportCreator;
+
+        public CreateBugReportController(IBugReportCreator bugReportCreator, IMapper mapper)
+        {
+            this.bugReportCreator = bugReportCreator;
+            this._mapper = mapper;
+        }
         [HttpPost]
         [DisableRequestSizeLimit]
         public async Task<IActionResult> CreateBugReport()
@@ -26,25 +37,38 @@ namespace RoadState.Backend.Controllers
                 return BadRequest();
             }*/
 
-            if (Request.Form.Files.Count > 0)
+            if (Request.Form.Files.Count > 1)
             {
+                CreateBugReportDto createBR = new CreateBugReportDto();
+                List<byte[]> photos = new List<byte[]>();
                 foreach (var file in Request.Form.Files)
                 {
-                    if(file.Name == "Data")
+                    if (file.Name == "Data")
                     {
                         string allText = "";
                         using (var reader = new StreamReader(file.OpenReadStream()))
                         {
                             allText = reader.ReadToEnd();
                         }
-                        if(allText == "" || allText == null)
+                        if (allText == "" || allText == null)
                         {
                             return BadRequest();
                         }
-                        var jsonObject = JsonConvert.DeserializeObject<CreateBugReportDTO>(allText);
-                        
+                        createBR = JsonConvert.DeserializeObject<CreateBugReportDto>(allText);
+
+                    }
+                    else
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            file.CopyTo(ms);
+                            photos.Add(ms.ToArray());
+                        }
                     }
                 }
+                var newBR = _mapper.Map<BugReport>(createBR);
+                newBR.Photos = _mapper.Map<List<Photo>>(photos);
+                await bugReportCreator.CreateBugReportAsync(newBR);
                 //Loop through uploaded files  
                 //for (int i = 0; i < httpContext.Request.Form.Files.Count; i++)
                 //{
@@ -58,6 +82,10 @@ namespace RoadState.Backend.Controllers
                 //        httpPostedFile.SaveAs(fileSavePath);
                 //    }
                 //}
+            }
+            else
+            {
+                return BadRequest();
             }
 
 

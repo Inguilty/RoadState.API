@@ -40,9 +40,7 @@ namespace RoadState.DataAccessLayer
                 Id = "abcd",
                 Email = "123@gmail.com",
                 UserName = "dimasik",
-                RegistrationDate = DateTime.Now,
-                Latitude = 34,
-                Longitude = 55,
+                RegistrationDate = DateTime.Now
             });
 
             modelBuilder.Entity<BugReportRate>().HasOne(x => x.BugReport)
