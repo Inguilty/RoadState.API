@@ -27,7 +27,6 @@ namespace RoadState.Backend.Controllers
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax));
-            var a = User.Identity.Name;
             if (bugReports.Count == 0) return NotFound("no bug reports in this square");
             return Ok(bugReports);
         }
