@@ -5,6 +5,7 @@ using RoadState.BusinessLayer;
 using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -51,14 +52,17 @@ namespace RoadState.Backend.Controllers
 
         [Authorize]
         [HttpPost("{id}/rate")]
-        public async Task<IActionResult> RateBugReportAsync(int id, string rate)
+        public async Task<IActionResult> RateBugReportAsync([FromBody]UserRateDTO userRateDTO)
         {
-            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == id)).FirstOrDefault();
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadToken(userRateDTO.Token) as JwtSecurityToken;
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == userRateDTO.Id)).FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
-            var user = (await userFinder.GetUsersAsync(x => x.Id == User.Identity.Name)).FirstOrDefault();
-            bool hasAgreed = rate == "agree";
+            var user = (await userFinder.GetUsersAsync(x => x.Id == userId)).FirstOrDefault();
+            bool hasAgreed = userRateDTO.Rate == "agree";
             await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
-            if(hasAgreed)
+            if (hasAgreed)
             {
                 bugReport.Rating++;
             }
