@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +39,7 @@ namespace RoadState.Backend.Controllers
             if (result.ErrorOccured)
                 return BadRequest(new { message = result.ErrorMessage });
 
+
             return Ok(new
             {
                 id = result.User.Id,
@@ -58,13 +63,51 @@ namespace RoadState.Backend.Controllers
         [HttpPut("{id}/update")]
         public async Task<IActionResult> Update([FromBody]UserProfile userProfileDto)
         {
+            if (!await CheckTokenValid()) return NoContent();
             var user = _mapper.Map<UserDto>(userProfileDto);
             var result = await _userService.Update(user, userProfileDto.NewPassword);
 
-            if(result.ErrorOccured)
+            if (result.ErrorOccured)
                 return BadRequest(new { message = result.ErrorMessage });
 
             return Ok();
+        }
+
+        [Authorize]
+        [HttpGet("checkToken")]
+        public async Task<IActionResult> CheckToken()
+        {
+            if (!await CheckTokenValid()) return BadRequest();
+            var tokenString = Request.Headers["Authorization"].ToString().Split(' ')[1];
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            return Ok(new
+            {
+                id = userId,
+                token = tokenString
+            });
+        }
+
+
+        private async Task<bool> CheckTokenValid()
+        {
+            var tokenString = Request.Headers["Authorization"].ToString().Split(' ')[1];
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadToken(tokenString) as JwtSecurityToken;
+
+            //If there is no user with such id return false
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (await _userService.GetById(userId) == null) return false;
+
+            if (token == null) return false;
+            var tokenExpiryDate = token.ValidTo;
+            // If there is no valid `exp` claim then `ValidTo` returns DateTime.MinValue
+            if (tokenExpiryDate == DateTime.MinValue) return false;
+
+            // If the token is in the past then you can't use it
+            if (tokenExpiryDate < DateTime.UtcNow) return false;
+
+            // Token is valid
+            return true;
         }
     }
 }
