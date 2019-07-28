@@ -8,6 +8,7 @@ using RoadState.Data;
 using RoadState.DataAccessLayer;
 using AutoMapper;
 using RoadState.BusinessLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace RoadState.Backend.Controllers
 {
@@ -25,9 +26,9 @@ namespace RoadState.Backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBugReports([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
         {
-            var bugReports = _context.BugReports.Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
+            var bugReports = _context.BugReports.Include(x=>x.Author).Include(x=>x.BugReportRates).Include(x=>x.Comments).ThenInclude(x=>x.UserLikes).Where(x => BugReportRectanglePredicate(x, longitudeMin, longitudeMax, latitudeMin, latitudeMax)).ToList();
             if (bugReports.Count == 0) return NotFound();
-            return Ok(bugReports);
+            return Ok(bugReports.Select(x=>_mapper.Map<BugReportDto>(x)));
         }
 
         private bool BugReportRectanglePredicate(BugReport bugReport, double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -38,9 +39,10 @@ namespace RoadState.Backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBugReport(int id)
         {
-            var bugReport = await _context.BugReports.FindAsync(id);
+            var bugReport = await _context.BugReports.Include(x=>x.Author).Include(x=>x.Comments).ThenInclude(x=>x.UserLikes).Include(x=>x.BugReportRates).FirstOrDefaultAsync(x=>x.Id == id);
             if (bugReport is null) return NotFound();
-            return Ok(_mapper.Map<BugReportDto>(bugReport));
+            var response = _mapper.Map<BugReportDto>(bugReport);
+            return Ok(response);
         }
 
         [HttpPost("{id}/rate")]
