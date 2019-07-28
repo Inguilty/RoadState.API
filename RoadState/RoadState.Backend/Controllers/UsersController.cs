@@ -85,6 +85,7 @@ namespace RoadState.Backend.Controllers
             var result = await userFinder.GetUsersAsync(x => x.Id == userId);
             if (result.Count == 0) return NotFound("No such user");
             return Ok(_mapper.Map<UserDto>(result.FirstOrDefault()));
+        }
         [Authorize]
         [HttpGet("checkToken")]
         public async Task<IActionResult> CheckToken()

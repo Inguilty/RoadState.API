@@ -62,7 +62,7 @@ namespace RoadState.Backend.Controllers
 
         [Authorize]
         [HttpPost("{id}/rate")]
-        public async Task<IActionResult> RateBugReportAsync([FromBody]UserRateDTO userRateDTO)
+        public async Task<IActionResult> RateBugReportAsync([FromBody] UserRateDTO userRateDTO)
         {
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadToken(userRateDTO.Token) as JwtSecurityToken;
