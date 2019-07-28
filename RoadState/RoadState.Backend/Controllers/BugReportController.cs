@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RoadState.BusinessLayer;
 using RoadState.BusinessLayer.TransportModels;
@@ -14,11 +15,13 @@ namespace RoadState.Backend.Controllers
     [ApiController]
     public class BugReportController : ControllerBase
     {
+        private readonly IUserFinder userFinder;
         private readonly IBugReportFinder bugReportFinder;
         private readonly IBugReportRater bugReportRater;
         private readonly IMapper _mapper;
-        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper)
+        public BugReportController(IBugReportFinder bugReportFinder, IBugReportRater bugReportRater, IMapper mapper, IUserFinder userFinder)
         {
+            this.userFinder = userFinder;
             this.bugReportFinder = bugReportFinder;
             this.bugReportRater = bugReportRater;
             this._mapper = mapper;
@@ -46,11 +49,23 @@ namespace RoadState.Backend.Controllers
             return Ok(_mapper.Map<BugReportDto>(bugReport));
         }
 
+        [Authorize]
         [HttpPost("{id}/rate")]
         public async Task<IActionResult> RateBugReportAsync(int id, string rate)
         {
             var bugReport = (await bugReportFinder.GetBugReportsAsync(x => x.Id == id)).FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
+            var user = (await userFinder.GetUsersAsync(x => x.Id == User.Identity.Name)).FirstOrDefault();
+            bool hasAgreed = rate == "agree";
+            await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
+            if(hasAgreed)
+            {
+                bugReport.Rating++;
+            }
+            else
+            {
+                bugReport.Rating--;
+            }
             return Ok();
         }
     }
