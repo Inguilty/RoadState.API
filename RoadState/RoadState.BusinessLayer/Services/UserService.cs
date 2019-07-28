@@ -143,16 +143,19 @@ namespace RoadState.BusinessLayer.Services
                     user.AvatarUrl = userParam.AvatarUrl;
                 }
 
-                if (!VerifyPasswordHash(userParam.Password, user.PasswordHash, user.PasswordSalt))
-                    throw new WrongCredentialsException("You entered wrong old password!");
-
-                // update password if it was entered
-                if (!string.IsNullOrWhiteSpace(newPassword))
+                if (!string.IsNullOrEmpty(newPassword))
                 {
-                    CreatePasswordHash(userParam.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                    if (!VerifyPasswordHash(userParam.Password, user.PasswordHash, user.PasswordSalt))
+                        throw new WrongCredentialsException("You entered wrong old password!");
 
-                    user.PasswordHash = passwordHash;
-                    user.PasswordSalt = passwordSalt;
+                    // update password if it was entered
+                    if (!string.IsNullOrWhiteSpace(newPassword))
+                    {
+                        CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+                        user.PasswordHash = passwordHash;
+                        user.PasswordSalt = passwordSalt;
+                    }
                 }
 
                 await _userUpdater.UpdateUserAsync(user);
