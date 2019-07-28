@@ -51,7 +51,6 @@ namespace RoadState.Backend
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
             app.UseStaticFiles();
-            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
