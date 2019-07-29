@@ -56,6 +56,7 @@ namespace RoadState.DataAccessLayer
             return await this._context.BugReports.Include(x => x.Author).
                 Include(x=>x.Comments).
                 ThenInclude(x=>x.UserLikes).
+                Include(x=>x.Comments).ThenInclude(x=>x.Author).
                 Include(x=>x.BugReportRates).
                 Where(predicate).ToListAsync();
         }
