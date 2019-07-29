@@ -7,7 +7,7 @@ using System.Text;
 namespace RoadState.DataAccessLayer
 {
     public class RoadStateContext : DbContext
-    { 
+    {
         public RoadStateContext(DbContextOptions<RoadStateContext> options) : base(options)
         {
             Database.EnsureCreated();
@@ -40,7 +40,9 @@ namespace RoadState.DataAccessLayer
                 Id = "abcd",
                 Email = "123@gmail.com",
                 UserName = "dimasik",
-                RegistrationDate = DateTime.Now
+                RegistrationDate = DateTime.Now,
+                Latitude = 34,
+                Longitude = 55,
             });
 
             modelBuilder.Entity<BugReportRate>().HasOne(x => x.BugReport)
