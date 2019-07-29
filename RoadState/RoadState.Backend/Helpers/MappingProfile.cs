@@ -24,6 +24,8 @@ namespace RoadState.Backend.Helpers
                 .ConvertUsing(b => new Photo() { Blob = b });
             CreateMap<Photo, byte[]>()
                 .ConvertUsing(b => b.Blob);
+            CreateMap<Photo, int>()
+                .ConvertUsing(b => b.Id);
             CreateMap<CreateBugReportDto, BugReport>()
                 .ForMember(b => b.State, opt => opt.MapFrom(b => b.ProblemLevel))
                 .ForMember(b => b.AuthorId, opt => opt.MapFrom(b => b.UserId));

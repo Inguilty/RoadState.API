@@ -24,13 +24,15 @@ namespace RoadState.Backend.Controllers
         private readonly IBugReportRater bugReportRater;
         private readonly IBugReportCreator bugReportCreator;
         private readonly ICommentCreator commentCreator;
+        private readonly IPhotoFinder photoFinder;
         private readonly IMapper _mapper;
         public BugReportController(IBugReportFinder bugReportFinder, 
             IBugReportRater bugReportRater, 
             IMapper mapper, 
             IUserFinder userFinder,
             ICommentCreator commentCreator,
-            IBugReportCreator bugReportCreator
+            IBugReportCreator bugReportCreator,
+            IPhotoFinder photoFinder
             )
         {
             this.userFinder = userFinder;
@@ -39,6 +41,7 @@ namespace RoadState.Backend.Controllers
             this.bugReportCreator = bugReportCreator;
             this._mapper = mapper;
             this.commentCreator = commentCreator;
+            this.photoFinder = photoFinder;
         }
         [HttpGet]
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -56,13 +59,14 @@ namespace RoadState.Backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBugReportAsync(int id, string userId)
         {
-
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
             var bugReport = bugReports.FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
             var hasUserRated = bugReport.BugReportRates.Count(x => x.UserId == userId) != 0;
             var mapped = _mapper.Map<BugReportDto>(bugReport);
             mapped.UserRate = hasUserRated ? bugReport.BugReportRates.FirstOrDefault(x => x.UserId == userId).HasAgreed ? "agree" : "disagree" : null;
+            var photos = await photoFinder.GetPhotoesAsync(x => x.BugReportId == id);
+            mapped.PhotoIds = _mapper.Map<List<int>>(photos);
             return Ok(mapped);
         }
 
