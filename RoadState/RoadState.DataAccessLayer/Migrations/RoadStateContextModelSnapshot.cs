@@ -53,7 +53,7 @@ namespace RoadState.DataAccessLayer.Migrations
                             Description = "first bug report",
                             Latitude = 50.046199999999999,
                             Longitude = 36.315159999999999,
-                            PublishDate = new DateTime(2019, 7, 28, 11, 33, 33, 24, DateTimeKind.Local).AddTicks(1007),
+                            PublishDate = new DateTime(2019, 7, 29, 12, 43, 42, 620, DateTimeKind.Local).AddTicks(5656),
                             Rating = 1,
                             State = "Low"
                         });
@@ -129,10 +129,6 @@ namespace RoadState.DataAccessLayer.Migrations
 
                     b.Property<string>("Email");
 
-                    b.Property<double>("Latitude");
-
-                    b.Property<double>("Longitude");
-
                     b.Property<byte[]>("PasswordHash");
 
                     b.Property<byte[]>("PasswordSalt");
@@ -150,9 +146,7 @@ namespace RoadState.DataAccessLayer.Migrations
                         {
                             Id = "abcd",
                             Email = "123@gmail.com",
-                            Latitude = 34.0,
-                            Longitude = 55.0,
-                            RegistrationDate = new DateTime(2019, 7, 28, 11, 33, 33, 27, DateTimeKind.Local).AddTicks(1234),
+                            RegistrationDate = new DateTime(2019, 7, 29, 12, 43, 42, 622, DateTimeKind.Local).AddTicks(4048),
                             UserName = "dimasik"
                         });
                 });

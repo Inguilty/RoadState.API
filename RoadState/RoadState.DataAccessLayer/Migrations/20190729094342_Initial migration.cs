@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace RoadState.DataAccessLayer.Migrations
 {
-    public partial class Initial : Migration
+    public partial class Initialmigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,9 +15,10 @@ namespace RoadState.DataAccessLayer.Migrations
                     Id = table.Column<string>(nullable: false),
                     Email = table.Column<string>(nullable: true),
                     UserName = table.Column<string>(nullable: true),
-                    RegistrationDate = table.Column<DateTime>(nullable: false),
-                    Longitude = table.Column<double>(nullable: false),
-                    Latitude = table.Column<double>(nullable: false)
+                    AvatarUrl = table.Column<string>(nullable: true),
+                    PasswordHash = table.Column<byte[]>(nullable: true),
+                    PasswordSalt = table.Column<byte[]>(nullable: true),
+                    RegistrationDate = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -150,6 +151,16 @@ namespace RoadState.DataAccessLayer.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "AvatarUrl", "Email", "PasswordHash", "PasswordSalt", "RegistrationDate", "UserName" },
+                values: new object[] { "abcd", null, "123@gmail.com", null, null, new DateTime(2019, 7, 29, 12, 43, 42, 622, DateTimeKind.Local).AddTicks(4048), "dimasik" });
+
+            migrationBuilder.InsertData(
+                table: "BugReports",
+                columns: new[] { "Id", "AuthorId", "Description", "Latitude", "Longitude", "PublishDate", "Rating", "State" },
+                values: new object[] { 1, "abcd", "first bug report", 50.046199999999999, 36.315159999999999, new DateTime(2019, 7, 29, 12, 43, 42, 620, DateTimeKind.Local).AddTicks(5656), 1, "Low" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BugReportRates_BugReportId",

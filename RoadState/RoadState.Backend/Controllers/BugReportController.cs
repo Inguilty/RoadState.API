@@ -15,6 +15,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Geocoding;
 using Geocoding.Google;
+using RoadState.Backend.Helpers;
+using Microsoft.Extensions.Options;
 
 namespace RoadState.Backend.Controllers
 {
@@ -27,13 +29,16 @@ namespace RoadState.Backend.Controllers
         private readonly IBugReportRater bugReportRater;
         private readonly IBugReportCreator bugReportCreator;
         private readonly ICommentCreator commentCreator;
+        private readonly AppSettings _appSettings;
         private readonly IMapper _mapper;
         public BugReportController(IBugReportFinder bugReportFinder, 
             IBugReportRater bugReportRater, 
             IMapper mapper, 
             IUserFinder userFinder,
             ICommentCreator commentCreator,
-            IBugReportCreator bugReportCreator)
+            IBugReportCreator bugReportCreator,
+            IOptions<AppSettings> appSettings
+            )
         {
             this.userFinder = userFinder;
             this.bugReportFinder = bugReportFinder;
@@ -41,6 +46,7 @@ namespace RoadState.Backend.Controllers
             this.bugReportCreator = bugReportCreator;
             this._mapper = mapper;
             this.commentCreator = commentCreator;
+            this._appSettings = appSettings.Value;
         }
         [HttpGet]
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -108,9 +114,9 @@ namespace RoadState.Backend.Controllers
                         {
                             allText = reader.ReadToEnd();
                         }
-                        if (allText == "" || allText == null)
+                        if (String.IsNullOrEmpty(allText))
                         {
-                            return BadRequest();
+                            return BadRequest("No data provided");
                         }
                         createBR = JsonConvert.DeserializeObject<CreateBugReportDto>(allText);
 
@@ -128,15 +134,16 @@ namespace RoadState.Backend.Controllers
                 newBR.Photos = _mapper.Map<List<Photo>>(photos);
                 newBR.PublishDate = DateTime.Now;
                 var user = (await userFinder.GetUsersAsync(x => x.Id == newBR.AuthorId)).FirstOrDefault();
-                if(user != null)
+                if(user == null)
                 {
-                    newBR.Author = user;
+                    return BadRequest("No user provided");
                 }
+                newBR.Author = user;
                 await bugReportCreator.CreateBugReportAsync(newBR);
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Not enough data provided");
             }
             return Ok();
         }
@@ -178,16 +185,15 @@ namespace RoadState.Backend.Controllers
         [HttpGet("address")]
         public async Task<IActionResult> GetAddressByCoordinatesAsync(string latitude, string longitude)
         {
-
-            if(longitude == null || latitude == null)
+            IGeocoder geocoder = new GoogleGeocoder(_appSettings.ApiKey);
+            if (String.IsNullOrEmpty(longitude) || String.IsNullOrEmpty(latitude))
             {
-                return BadRequest();
+                return BadRequest("No coordinates provided");
             }
-            IGeocoder geocoder = new GoogleGeocoder() { ApiKey = "AIzaSyBeFEC_8v3061wgyMUEO6mJ8EmAXzWedTk" };
             IEnumerable<Address> addresses = await geocoder.ReverseGeocodeAsync(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
             var addresse = addresses.FirstOrDefault();
             if (addresse is null) return NotFound("No addresses found");
-            return Ok(addresse);
+            return Ok(addresse.FormattedAddress);
         }
     }
 }
