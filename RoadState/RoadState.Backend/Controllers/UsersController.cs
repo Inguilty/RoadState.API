@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using RoadState.Backend.Helpers;
+using Microsoft.Extensions.Configuration;
 using RoadState.Backend.Models;
 using RoadState.BusinessLayer.Services;
 using RoadState.BusinessLayer.TransportModels;
 using RoadState.DataAccessLayer;
-using System.Linq;
 
 namespace RoadState.Backend.Controllers
 {
@@ -22,24 +20,25 @@ namespace RoadState.Backend.Controllers
     {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-        private readonly AppSettings _appSettings;
-        private readonly IUserFinder userFinder;
+        private readonly IConfiguration _configuration;
+        private readonly IUserFinder _userFinder;
 
         public AuthorizationController(
             IUserService userService,
-            IMapper mapper, IOptions<AppSettings> appSettings,
+            IMapper mapper, IConfiguration configuration,
             IUserFinder userFinder)
         {
             _userService = userService;
             _mapper = mapper;
-            _appSettings = appSettings.Value;
-            this.userFinder = userFinder;
+            _configuration = configuration;
+            this._userFinder = userFinder;
         }
 
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody]UserProfile user)
         {
-            var result = await _userService.Authenticate(user.UserName, user.Password, _appSettings.Secret);
+            var key = _configuration["AppSettings:Secret"];
+            var result = await _userService.Authenticate(user.UserName, user.Password, key);
 
             if (result.ErrorOccured)
                 return BadRequest(new { message = result.ErrorMessage });
@@ -78,21 +77,29 @@ namespace RoadState.Backend.Controllers
             return Ok();
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserInfo(string userId)
+
+        [Authorize]
+        [HttpGet("getUserCredentials")]
+        public async Task<IActionResult> GetUserCredentials()
         {
-            if (userId is null) return BadRequest("Invalid input");
-            var result = await userFinder.GetUsersAsync(x => x.Id == userId);
-            if (result.Count == 0) return NotFound("No such user");
-            return Ok(_mapper.Map<UserDto>(result.FirstOrDefault()));
+            if (!await CheckTokenValid()) return BadRequest("You should Sign in again!");
+            var userId = GetIdFromClaims();
+            var foundUser = await _userFinder.GetUsersAsync(x => x.Id == userId);
+            var result = _mapper.Map<UserDto>(foundUser?.FirstOrDefault());
+            return Ok(new
+            {
+                userName = result.UserName,
+                email = result.Email,
+            });
         }
+
         [Authorize]
         [HttpGet("checkToken")]
         public async Task<IActionResult> CheckToken()
         {
-            if (!await CheckTokenValid()) return BadRequest();
-            var tokenString = Request.Headers["Authorization"].ToString().Split(' ')[1];
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!await CheckTokenValid()) return BadRequest("You should Sign in again!");
+            var tokenString = GetTokenFromRequest();
+            var userId = GetIdFromClaims();
             return Ok(new
             {
                 id = userId,
@@ -100,15 +107,14 @@ namespace RoadState.Backend.Controllers
             });
         }
 
-
         private async Task<bool> CheckTokenValid()
         {
-            var tokenString = Request.Headers["Authorization"].ToString().Split(' ')[1];
+            var tokenString = GetTokenFromRequest();
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadToken(tokenString) as JwtSecurityToken;
 
             //If there is no user with such id return false
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetIdFromClaims();
             if (await _userService.GetById(userId) == null) return false;
 
             if (token == null) return false;
@@ -121,6 +127,17 @@ namespace RoadState.Backend.Controllers
 
             // Token is valid
             return true;
+        }
+        private string GetIdFromClaims()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            return userId;
+        }
+
+        private string GetTokenFromRequest()
+        {
+            var tokenString = Request.Headers["Authorization"].ToString().Split(' ')[1];
+            return tokenString;
         }
     }
 }
