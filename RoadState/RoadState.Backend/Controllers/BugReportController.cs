@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RoadState.BusinessLayer;
+using Newtonsoft.Json;
 using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,19 +22,26 @@ namespace RoadState.Backend.Controllers
         private readonly IUserFinder userFinder;
         private readonly IBugReportFinder bugReportFinder;
         private readonly IBugReportRater bugReportRater;
+        private readonly IBugReportCreator bugReportCreator;
         private readonly ICommentCreator commentCreator;
+        private readonly IPhotoFinder photoFinder;
         private readonly IMapper _mapper;
         public BugReportController(IBugReportFinder bugReportFinder, 
             IBugReportRater bugReportRater, 
             IMapper mapper, 
             IUserFinder userFinder,
-            ICommentCreator commentCreator)
+            ICommentCreator commentCreator,
+            IBugReportCreator bugReportCreator,
+            IPhotoFinder photoFinder
+            )
         {
             this.userFinder = userFinder;
             this.bugReportFinder = bugReportFinder;
             this.bugReportRater = bugReportRater;
+            this.bugReportCreator = bugReportCreator;
             this._mapper = mapper;
             this.commentCreator = commentCreator;
+            this.photoFinder = photoFinder;
         }
         [HttpGet]
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -50,13 +59,18 @@ namespace RoadState.Backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBugReportAsync(int id, string userId)
         {
-
             var bugReports = await bugReportFinder.GetBugReportsAsync(x => x.Id == id);
             var bugReport = bugReports.FirstOrDefault();
             if (bugReport is null) return NotFound("No bug report found");
             var hasUserRated = bugReport.BugReportRates.Count(x => x.UserId == userId) != 0;
             var mapped = _mapper.Map<BugReportDto>(bugReport);
             mapped.UserRate = hasUserRated ? bugReport.BugReportRates.FirstOrDefault(x => x.UserId == userId).HasAgreed ? "agree" : "disagree" : null;
+            var photos = await photoFinder.GetPhotoesAsync(x => x.BugReportId == id);
+            if(photos.Count == 0)
+            {
+                return Ok(mapped);
+            }
+            mapped.PhotoIds = _mapper.Map<List<int>>(photos);
             return Ok(mapped);
         }
 
@@ -80,6 +94,57 @@ namespace RoadState.Backend.Controllers
                 bugReport.Rating--;
             }
             await bugReportRater.RateBugReportAsync(bugReport, user, hasAgreed);
+            return Ok();
+        }
+
+        [HttpPost]
+        [DisableRequestSizeLimit]
+        public async Task<IActionResult> CreateBugReportAsync()
+        {
+            if (Request.Form.Files.Count > 1)
+            {
+                CreateBugReportDto createBR = new CreateBugReportDto();
+                List<byte[]> photos = new List<byte[]>();
+                foreach (var file in Request.Form.Files)
+                {
+                    if (file.Name == "Data")
+                    {
+                        string allText = "";
+                        using (var reader = new StreamReader(file.OpenReadStream()))
+                        {
+                            allText = reader.ReadToEnd();
+                        }
+                        if (String.IsNullOrEmpty(allText))
+                        {
+                            return BadRequest("No data provided");
+                        }
+                        createBR = JsonConvert.DeserializeObject<CreateBugReportDto>(allText);
+
+                    }
+                    else
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            file.CopyTo(ms);
+                            photos.Add(ms.ToArray());
+                        }
+                    }
+                }
+                var newBR = _mapper.Map<BugReport>(createBR);
+                newBR.Photos = _mapper.Map<List<Photo>>(photos);
+                newBR.PublishDate = DateTime.Now;
+                var user = (await userFinder.GetUsersAsync(x => x.Id == newBR.AuthorId)).FirstOrDefault();
+                if(user == null)
+                {
+                    return BadRequest("No user provided");
+                }
+                newBR.Author = user;
+                await bugReportCreator.CreateBugReportAsync(newBR);
+            }
+            else
+            {
+                return BadRequest("Not Data or files provided");
+            }
             return Ok();
         }
 

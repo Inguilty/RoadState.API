@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http.Internal;
+using System;
 using System.Collections.Generic;
 
 namespace RoadState.BusinessLayer.TransportModels
@@ -13,5 +14,6 @@ namespace RoadState.BusinessLayer.TransportModels
         public DateTime PublishDate { get; set; }
         public Location Location { get; set; }
         public List<CommentDto> Comments { get; set; }
+        public List<int> PhotoIds { get; set; }
     }
 }
