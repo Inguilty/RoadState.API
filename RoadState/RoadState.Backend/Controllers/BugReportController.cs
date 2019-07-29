@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using RoadState.BusinessLayer;
 using RoadState.BusinessLayer.TransportModels;
 using RoadState.Data;
 using RoadState.DataAccessLayer;
@@ -13,10 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Geocoding;
-using Geocoding.Google;
-using RoadState.Backend.Helpers;
-using Microsoft.Extensions.Options;
 
 namespace RoadState.Backend.Controllers
 {
@@ -29,15 +24,13 @@ namespace RoadState.Backend.Controllers
         private readonly IBugReportRater bugReportRater;
         private readonly IBugReportCreator bugReportCreator;
         private readonly ICommentCreator commentCreator;
-        private readonly AppSettings _appSettings;
         private readonly IMapper _mapper;
         public BugReportController(IBugReportFinder bugReportFinder, 
             IBugReportRater bugReportRater, 
             IMapper mapper, 
             IUserFinder userFinder,
             ICommentCreator commentCreator,
-            IBugReportCreator bugReportCreator,
-            IOptions<AppSettings> appSettings
+            IBugReportCreator bugReportCreator
             )
         {
             this.userFinder = userFinder;
@@ -46,7 +39,6 @@ namespace RoadState.Backend.Controllers
             this.bugReportCreator = bugReportCreator;
             this._mapper = mapper;
             this.commentCreator = commentCreator;
-            this._appSettings = appSettings.Value;
         }
         [HttpGet]
         public async Task<IActionResult> GetBugReportsAsync([FromQuery] double longitudeMin, double longitudeMax, double latitudeMin, double latitudeMax)
@@ -143,7 +135,7 @@ namespace RoadState.Backend.Controllers
             }
             else
             {
-                return BadRequest("Not enough data provided");
+                return BadRequest("Not Data or files provided");
             }
             return Ok();
         }
@@ -180,20 +172,6 @@ namespace RoadState.Backend.Controllers
                 Text = commentDto.Text
             });
             return NoContent();
-        }
-
-        [HttpGet("address")]
-        public async Task<IActionResult> GetAddressByCoordinatesAsync(string latitude, string longitude)
-        {
-            IGeocoder geocoder = new GoogleGeocoder(_appSettings.ApiKey);
-            if (String.IsNullOrEmpty(longitude) || String.IsNullOrEmpty(latitude))
-            {
-                return BadRequest("No coordinates provided");
-            }
-            IEnumerable<Address> addresses = await geocoder.ReverseGeocodeAsync(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
-            var addresse = addresses.FirstOrDefault();
-            if (addresse is null) return NotFound("No addresses found");
-            return Ok(addresse.FormattedAddress);
         }
     }
 }
