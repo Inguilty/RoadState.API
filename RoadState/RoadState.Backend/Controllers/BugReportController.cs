@@ -66,6 +66,10 @@ namespace RoadState.Backend.Controllers
             var mapped = _mapper.Map<BugReportDto>(bugReport);
             mapped.UserRate = hasUserRated ? bugReport.BugReportRates.FirstOrDefault(x => x.UserId == userId).HasAgreed ? "agree" : "disagree" : null;
             var photos = await photoFinder.GetPhotoesAsync(x => x.BugReportId == id);
+            if(photos.Count == 0)
+            {
+                return Ok(mapped);
+            }
             mapped.PhotoIds = _mapper.Map<List<int>>(photos);
             return Ok(mapped);
         }
