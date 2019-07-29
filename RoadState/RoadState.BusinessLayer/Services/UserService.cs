@@ -93,7 +93,7 @@ namespace RoadState.BusinessLayer.Services
             try
             {
                 var createdUser = _mapper.Map<User>(user);
-
+                createdUser.RegistrationDate = DateTime.Now;
                 if (string.IsNullOrWhiteSpace(password))
                     throw new WrongCredentialsException("Password is required");
 

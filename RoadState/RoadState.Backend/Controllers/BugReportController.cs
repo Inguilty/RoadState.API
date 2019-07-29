@@ -13,6 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Geocoding;
+using Geocoding.Google;
 
 namespace RoadState.Backend.Controllers
 {
@@ -171,6 +173,21 @@ namespace RoadState.Backend.Controllers
                 Text = commentDto.Text
             });
             return NoContent();
+        }
+
+        [HttpGet("address")]
+        public async Task<IActionResult> GetAddressByCoordinatesAsync(string latitude, string longitude)
+        {
+
+            if(longitude == null || latitude == null)
+            {
+                return BadRequest();
+            }
+            IGeocoder geocoder = new GoogleGeocoder() { ApiKey = "AIzaSyBeFEC_8v3061wgyMUEO6mJ8EmAXzWedTk" };
+            IEnumerable<Address> addresses = await geocoder.ReverseGeocodeAsync(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
+            var addresse = addresses.FirstOrDefault();
+            if (addresse is null) return NotFound("No addresses found");
+            return Ok(addresse);
         }
     }
 }
